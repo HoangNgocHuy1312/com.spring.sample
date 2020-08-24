@@ -27,7 +27,7 @@ import com.spring.sample.service.UserService;
 @Service
 public class UserServiceImp implements UserService {
 
-	private static Logger log = LoggerFactory.getLogger(UserServiceImp.class);
+	private static final Logger logger = LoggerFactory.getLogger(UserServiceImp.class);
 
 	@Autowired
 	private UserDAO userDAO;
@@ -38,12 +38,12 @@ public class UserServiceImp implements UserService {
 	private UserServiceImp() {
 	}
 
-	public void setUserDao(UserDAO userDAO) {
+	public void setUserDAO(UserDAO userDAO) {
 		this.userDAO = userDAO;
 	}
 
 	public UserModel findUserByEmail(String email) {
-		log.info("Fetching the user by email in the database");
+		logger.info("Fetching the user by email in the database");
 		try {
 			User user = userDAO.findUserByEmail(email);
 			UserModel userModel = null;
@@ -53,13 +53,24 @@ public class UserServiceImp implements UserService {
 			}
 			return userModel;
 		} catch (Exception e) {
-			log.error("An error occurred while fetching the user details by email from the database", e);
+			logger.error("An error occurred while fetching the user details by email from the database", e);
 			return null;
 		}
 	}
 
+	@Override
+	public boolean existingEmail(String email, Integer id) {
+		logger.info("Checking the user by email in the database");
+		try {
+			return userDAO.existingEmail(email, id);
+		} catch (Exception e) {
+			logger.error("An error occurred while checking the user details by email from the database", e);
+			return true;
+		}
+	}
+
 	public UserModel findUser(Integer id) {
-		log.info("Checking the user in the database");
+		logger.info("Checking the user in the database");
 		try {
 			User user = userDAO.find(id);
 			UserModel userModel = null;
@@ -69,17 +80,16 @@ public class UserServiceImp implements UserService {
 			}
 			return userModel;
 		} catch (Exception e) {
-			log.error("An error occurred while fetching the user details from the database", e);
+			logger.error("An error occurred while fetching the user details from the database", e);
 			return null;
 		}
 	}
 
 	@Transactional
 	public UserModel addUser(UserModel userModel) throws Exception {
-		log.info("Adding the user in the database");
+		logger.info("Adding the user in the database");
 		try {
 			User condition = new User();
-			condition.setId(userModel.getId());
 			condition.setName(userModel.getName());
 			condition.setEmail(userModel.getEmail());
 			condition.setPassword(passwordEncoder.encode(userModel.getPassword()));
@@ -89,14 +99,14 @@ public class UserServiceImp implements UserService {
 			BeanUtils.copyProperties(user, userModel);
 			return userModel;
 		} catch (Exception e) {
-			log.error("An error occurred while adding the user details to the database", e);
+			logger.error("An error occurred while adding the user details to the database", e);
 			throw e;
 		}
 	}
 
 	@Transactional
 	public UserModel editUser(UserModel userModel) throws Exception {
-		log.info("Updating the user in the database");
+		logger.info("Updating the user in the database");
 		try {
 			User user = userDAO.find(userModel.getId(), true);
 			if (StringUtils.hasText(userModel.getName())) {
@@ -111,26 +121,26 @@ public class UserServiceImp implements UserService {
 			userDAO.makePersistent(user);
 			return userModel;
 		} catch (Exception e) {
-			log.error("An error occurred while updating the user details to the database", e);
+			logger.error("An error occurred while updating the user details to the database", e);
 			throw e;
 		}
 	}
 
 	@Transactional
 	public boolean deleteUser(UserModel userModel) throws Exception {
-		log.info("Deleting the user in the database");
+		logger.info("Deleting the user in the database");
 		try {
 			User user = userDAO.find(userModel.getId(), true);
 			userDAO.makeTransient(user);
 			return true;
 		} catch (Exception e) {
-			log.error("An error occurred while adding the user details to the database", e);
+			logger.error("An error occurred while adding the user details to the database", e);
 			throw e;
 		}
 	}
 
 	public List<UserModel> findAll() {
-		log.info("Fetching all users in the database");
+		logger.info("Fetching all users in the database");
 		List<UserModel> userModelList = new ArrayList<UserModel>();
 		try {
 			List<User> userList = userDAO.findAll();
@@ -140,7 +150,7 @@ public class UserServiceImp implements UserService {
 				userModelList.add(userModel);
 			}
 		} catch (Exception e) {
-			log.error("An error occurred while fetching all users from the database", e);
+			logger.error("An error occurred while fetching all users from the database", e);
 		}
 		return userModelList;
 	}
@@ -150,7 +160,9 @@ public class UserServiceImp implements UserService {
 		if (user == null) {
 			throw new UsernameNotFoundException("Invalid username or password.");
 		}
-		return new CustomUserDetails(user);
+		UserModel userModel = new UserModel();
+		BeanUtils.copyProperties(user, userModel);
+		return new CustomUserDetails(userModel);
 	}
 
 	@Override
@@ -164,7 +176,7 @@ public class UserServiceImp implements UserService {
 
 			userDAO.makePersistent(user);
 		} catch (Exception e) {
-			log.error(e.getMessage(), e);
+			logger.error(e.getMessage(), e);
 		}
 	}
 
@@ -180,7 +192,7 @@ public class UserServiceImp implements UserService {
 
 			userDAO.makePersistent(user);
 		} catch (Exception e) {
-			log.error(e.getMessage(), e);
+			logger.error(e.getMessage(), e);
 		}
 	}
 
@@ -195,7 +207,7 @@ public class UserServiceImp implements UserService {
 						user.getLastUsed());
 			}
 		} catch (Exception e) {
-			log.error(e.getMessage(), e);
+			logger.error(e.getMessage(), e);
 		}
 		return null;
 	}
@@ -211,17 +223,23 @@ public class UserServiceImp implements UserService {
 
 			userDAO.makePersistent(user);
 		} catch (Exception e) {
-			log.error(e.getMessage(), e);
+			logger.error(e.getMessage(), e);
 		}
 	}
 
 	@Override
 	public Page<UserModel> paginate(UserModel userModel) {
 		try {
-			return userDAO.paginate(userModel);
+			Page<User> users = userDAO.paginate(userModel.getPageable());
+			return users.map(user -> {
+				UserModel model = new UserModel();
+				BeanUtils.copyProperties(user, model);
+				return model;
+			});
 		} catch (Exception e) {
-			log.error(e.getMessage(), e);
+			logger.error(e.getMessage(), e);
 			return null;
 		}
 	}
+
 }

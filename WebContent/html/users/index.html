@@ -9,14 +9,7 @@
   <div th:if="${users.totalPages > 0}" th:replace="~{shared/_pagination :: copy(${users}, '/users')}"></div>
   
   <ul class="users">
-    <li th:each="user : ${users.content}" th:id="'user-'+${user.id}">
-      <img th:attr="src=${user.gravatarURL}" class="gravatar" />
-      <a th:href="@{'/users/'+${user.id}}" th:text="${user.name}"></a>
-      | <a th:href="@{'/users/'+${user.id}+'/edit'}"
-        th:text="#{user.edit}">Edit</a>
-      | <a class="delete-user" th:href="@{'/users/'+${user.id}}"
-        th:text="#{user.delete}" th:data-method="delete" th:data-id="${user.id}">Delete</a>
-    </li>
+    <li th:each="user : ${users.content}" th:replace="~{users/_user :: copy(${user})}"></li>
   </ul>
   
   <div th:if="${users.totalPages > 0}" th:replace="~{shared/_pagination :: copy(${users}, '/users')}"></div>

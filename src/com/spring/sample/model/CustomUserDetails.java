@@ -7,22 +7,21 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
 import com.spring.sample.entity.Role;
-import com.spring.sample.entity.User;
 
 @SuppressWarnings("serial")
 public class CustomUserDetails extends org.springframework.security.core.userdetails.User {
-	private User user = null;
+	private UserModel user = null;
 
-	public CustomUserDetails(User user) {
+	public CustomUserDetails(UserModel user) {
 		super(user.getEmail(), user.getPassword(), mapRolesToAuthorities(user.getRole()));
 		this.user = user;
 	}
 
-	public User getUser() {
+	public UserModel getUser() {
 		return user;
 	}
 
-	public void setUser(User user) {
+	public void setUser(UserModel user) {
 		this.user = user;
 	}
 

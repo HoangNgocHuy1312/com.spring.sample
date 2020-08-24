@@ -29,6 +29,7 @@
       	<property name="mappingResources">
       		<list>
          		<value>com/spring/sample/entity/user.hbm.xml</value>
+         		<value>com/spring/sample/entity/micropost.hbm.xml</value>
          	</list>
       	</property>
       	<property name="hibernateProperties">

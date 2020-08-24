@@ -184,6 +184,7 @@
 	    <set>
 	      <!-- Note the package would change to 'springsecurity[3|4]' if you are using that version -->
 	      <bean class="org.thymeleaf.extras.springsecurity5.dialect.SpringSecurityDialect"/>
+	      <bean class="com.spring.sample.util.ViewSupportDialect"/>
 	    </set>
 	  </property>
 	</bean>
@@ -193,6 +194,11 @@
   		<!-- NOTE 'order' and 'viewNames' are optional -->
   		<property name="order" value="1" />
   		<!-- <property name="viewNames" value="*.html,*.xhtml" /> -->
+  		<!-- <property name="staticVariables">
+  		  <map>
+  		    <entry key="prettyTime" value="com.spring.sample.util.CommonUtil"/>
+  		  </map>
+  		</property> -->
 	</bean>
 
 </beans>

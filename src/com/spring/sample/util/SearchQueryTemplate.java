@@ -1,22 +1,42 @@
 package com.spring.sample.util;
 
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Map;
 
 import org.hibernate.query.Query;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.Sort.Direction;
 
 public class SearchQueryTemplate {
 	private String sql;
 	private String countSql;
 	private Map<String, Object> parameterMap;
 	private Pageable pageable;
+	private Sort sort;
 
-	public SearchQueryTemplate() {
-
+	public SearchQueryTemplate(String sql, String countSql, Pageable pageable) {
+		this.sql = sql;
+		this.countSql = countSql;
+		this.pageable = pageable;
+		this.sort = pageable.getSort();
 	}
 
 	public String getSql() {
+		return sql;
+	}
+
+	public String getSql(boolean sortable) {
+		if (sortable && sort != null) {
+			final StringBuilder orderString = new StringBuilder();
+			sort.forEach(order -> {
+				orderString.append(order.getProperty() + " " + order.getDirection().name() + ",");
+			});
+			if (orderString.length() > 0) {
+				sql = sql + " ORDER BY " + orderString.substring(0, orderString.length() - 1);
+			}
+		}
 		return sql;
 	}
 
@@ -32,7 +52,7 @@ public class SearchQueryTemplate {
 		this.countSql = countSql;
 	}
 
-	public Map<String, Object> getParameterMap() {
+	public Map<String, ? extends Object> getParameterMap() {
 		return parameterMap;
 	}
 
@@ -46,6 +66,20 @@ public class SearchQueryTemplate {
 
 	public void setPageable(Pageable pageable) {
 		this.pageable = pageable;
+	}
+
+	public void addParameter(String property, Object value) {
+		if (parameterMap == null) {
+			parameterMap = new HashMap<String, Object>();
+		}
+		parameterMap.put(property, value);
+	}
+
+	public void addOrder(Direction value, String... properties) {
+		if (sort == null) {
+			return;
+		}
+		sort = sort.and(Sort.by(value, properties));
 	}
 
 	public <E> void setParameters(Query<E> query) {
