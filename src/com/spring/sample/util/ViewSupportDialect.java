@@ -8,10 +8,17 @@ import org.thymeleaf.dialect.AbstractDialect;
 import org.thymeleaf.dialect.IExpressionObjectDialect;
 import org.thymeleaf.expression.IExpressionObjectFactory;
 
+import com.spring.sample.configuration.ApplicationContextProvider;
+import com.spring.sample.uploader.ImageUploader;
+
 public class ViewSupportDialect extends AbstractDialect implements IExpressionObjectDialect {
+
+	private ImageUploader imageUploader;
 
 	public ViewSupportDialect() {
 		super("PrettyTime Dialect");
+		this.imageUploader = ApplicationContextProvider.getApplicationContext().getBean("imageUploader",
+				ImageUploader.class);
 	}
 
 	@Override
@@ -25,7 +32,7 @@ public class ViewSupportDialect extends AbstractDialect implements IExpressionOb
 
 			@Override
 			public Object buildObject(IExpressionContext context, String expressionObjectName) {
-				return new ViewSupportUtil();
+				return new ViewSupportUtil(imageUploader);
 			}
 
 			@Override

@@ -66,6 +66,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 	protected void configure(HttpSecurity http) throws Exception {
 		http.authorizeRequests()
 	        .antMatchers("/resources/**").permitAll()
+	        .antMatchers("/images/**").permitAll()
 	        .antMatchers("/webjars/**").permitAll()
 	        .antMatchers("/home").permitAll()
 	        .antMatchers("/login").permitAll()
@@ -79,7 +80,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 	        .anyRequest().hasAnyAuthority(Role.USER.name(), Role.ADMIN.name())
 	        .and().formLogin().loginPage("/login").failureUrl("/login?error=true")
 			    .usernameParameter("email").passwordParameter("password")
-			    .successHandler(authenticationSuccessHandler).loginProcessingUrl("/login").defaultSuccessUrl("/users").permitAll()
+			    .successHandler(authenticationSuccessHandler).loginProcessingUrl("/login").defaultSuccessUrl("/home").permitAll()
 	        .and().logout().invalidateHttpSession(true).clearAuthentication(true).deleteCookies("JSESSIONID")
 	            .logoutRequestMatcher(new AntPathRequestMatcher("/logout")).logoutSuccessUrl("/login?logout").permitAll()
 	        .and().rememberMe().rememberMeParameter("remember-me").tokenValiditySeconds(60*60).useSecureCookie(true)
@@ -88,6 +89,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 	        .and().csrf()
 	        .and().headers().contentSecurityPolicy("script-src 'self' https://trustedscripts.example.com; object-src https://trustedplugins.example.com; report-uri /csp-report-endpoint/");
 //			.httpBasic();
+//		http.csrf();
 	}
 	
 //	@Bean
@@ -102,7 +104,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 	
 	@Override
     public void configure(WebSecurity web) throws Exception {
-        web.ignoring().antMatchers("/resources/**", "/css/**", "/js/**", "/img/**", "/webjars/**");
+        web.ignoring().antMatchers("/resources/**", "/css/**", "/js/**", "/img/**", "/webjars/**", "/images/**");
     }
 	
 	@Override

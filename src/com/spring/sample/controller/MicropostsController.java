@@ -31,6 +31,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.multipart.support.StandardMultipartHttpServletRequest;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
@@ -38,6 +39,8 @@ import com.spring.sample.interceptor.Flash;
 import com.spring.sample.model.CustomUserDetails;
 import com.spring.sample.model.MicropostModel;
 import com.spring.sample.service.MicropostService;
+import com.spring.sample.uploader.ImageUpload;
+import com.spring.sample.uploader.ImageUploader;
 
 @Controller
 @EnableWebMvc
@@ -50,6 +53,10 @@ public class MicropostsController {
 	@Autowired
 	@Qualifier("micropostService")
 	MicropostService micropostService;
+
+	@Autowired
+	@Qualifier("imageUploader")
+	ImageUploader imageUploader;
 
 	@Resource
 	Flash flash;
@@ -74,10 +81,10 @@ public class MicropostsController {
 		return "microposts/add";
 	}
 
-	@PostMapping(value = "/microposts")
+	@PostMapping(value = "/microposts", headers = ("content-type=multipart/*"))
 	public String create(@ModelAttribute("micropost") @Validated MicropostModel micropostModel,
 			BindingResult bindingResult, Model model, final RedirectAttributes redirectAttributes,
-			Authentication authentication, HttpServletRequest request) throws Exception {
+			Authentication authentication, StandardMultipartHttpServletRequest request) throws Exception {
 		if (bindingResult.hasErrors()) {
 			logger.info("Returning add micropost page, validate failed");
 			if (authentication != null && authentication.isAuthenticated()) {
@@ -89,6 +96,10 @@ public class MicropostsController {
 				model.addAttribute("microposts", microposts);
 			}
 			return "static_pages/home";
+		}
+		ImageUpload imageUpload = imageUploader.uploadFile(micropostModel.getFile());
+		if (imageUpload != null) {
+			micropostModel.setUpload(imageUpload);
 		}
 		if (authentication != null && authentication.isAuthenticated()) {
 			CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();

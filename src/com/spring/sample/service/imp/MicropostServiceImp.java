@@ -55,8 +55,7 @@ public class MicropostServiceImp implements MicropostService {
 		logger.info("Adding the micropost in the database");
 		try {
 			Micropost condition = new Micropost();
-			condition.setUserId(micropostModel.getUserId());
-			condition.setContent(micropostModel.getContent());
+			BeanUtils.copyProperties(micropostModel, condition);
 			Micropost micropost = micropostDAO.makePersistent(condition);
 			micropostModel = new MicropostModel();
 			BeanUtils.copyProperties(micropost, micropostModel);

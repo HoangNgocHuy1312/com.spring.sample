@@ -8,6 +8,7 @@ public class Micropost extends BaseEntity implements Serializable {
 	private Integer id;
 	private Integer userId;
 	private String content;
+	private String image;
 
 	public User user;
 
@@ -37,6 +38,14 @@ public class Micropost extends BaseEntity implements Serializable {
 
 	public void setContent(String content) {
 		this.content = content;
+	}
+
+	public String getImage() {
+		return image;
+	}
+
+	public void setImage(String image) {
+		this.image = image;
 	}
 
 	public User getUser() {

@@ -23,6 +23,7 @@ import com.spring.sample.interceptor.Flash;
 import com.spring.sample.model.CustomUserDetails;
 import com.spring.sample.model.MicropostModel;
 import com.spring.sample.service.MicropostService;
+import com.spring.sample.uploader.ImageUploader;
 
 @Controller
 public class StaticPagesController {
@@ -31,10 +32,14 @@ public class StaticPagesController {
 
 	@Resource
 	private Flash flash;
-	
+
 	@Autowired
 	@Qualifier("micropostService")
 	MicropostService micropostService;
+
+	@Autowired
+	@Qualifier("imageUploader")
+	ImageUploader imageUploader;
 
 	/**
 	 * Simply selects the home view to render by returning its name.
@@ -52,10 +57,11 @@ public class StaticPagesController {
 	}
 
 	@RequestMapping(value = "/home", method = RequestMethod.GET)
-	public String home(@RequestParam(name = "page", required = false) Optional<Integer> page, Locale locale, Model model, Authentication authentication, HttpServletRequest request) {
+	public String home(@RequestParam(name = "page", required = false) Optional<Integer> page, Locale locale,
+			Model model, Authentication authentication, HttpServletRequest request) {
 		logger.info("Home Page Requested, locale = " + locale);
-		if(authentication != null && authentication.isAuthenticated()) {
-			CustomUserDetails userDetails= (CustomUserDetails)authentication.getPrincipal();
+		if (authentication != null && authentication.isAuthenticated()) {
+			CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
 			MicropostModel micropostModel = new MicropostModel();
 			micropostModel.setPage(page.orElse(1));
 			micropostModel.setUserId(userDetails.getUser().getId());

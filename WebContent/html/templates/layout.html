@@ -9,9 +9,11 @@
   <meta name="keywords" th:attr="content=#{meta.keywords}" />
   <!-- <sec:csrfMetaTags ></sec:csrfMetaTags> -->
 	<!-- default header name is X-CSRF-TOKEN -->
+  <th:block th:if="${_csrf}">
   <meta name="_csrf_header" th:attr="content=${_csrf.headerName}"/>
   <meta name="_csrf_parameter" th:attr="content=${_csrf.parameterName}"/>
   <meta name="_csrf" th:attr="content=${_csrf.token}"/>
+  </th:block>
 	
   <!-- Common styles and scripts -->
   <link rel="stylesheet" th:href="@{/webjars/bootstrap/3.4.1/css/bootstrap.min.css}">

@@ -11,10 +11,15 @@
         https://www.springframework.org/schema/context/spring-context.xsd
         http://www.springframework.org/schema/mvc
         https://www.springframework.org/schema/mvc/spring-mvc.xsd">
+        
+    <bean id="applicationProperties"
+    	class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+    	<property name="location" value="classpath:application.properties" />
+	</bean>
 
 	<!-- DispatcherServlet Context: defines this servlet's request-processing 
 		infrastructure -->
-
+		
 	<!-- Enables the Spring MVC @Controller programming model -->
 	<mvc:annotation-driven validator="validator">
 	    <mvc:message-converters>
@@ -62,6 +67,7 @@
 	
 	<!-- resources -->
 	<mvc:resources mapping="/resources/**" location="/resources/" />
+	<mvc:resources mapping="/images/**" location="file://${file.upload-dir}" />
 	<mvc:resources mapping="/webjars/**" location="/webjars/" />
 	<bean id="messageSource"
 		class="org.springframework.context.support.ReloadableResourceBundleMessageSource">
@@ -101,6 +107,14 @@
 	</mvc:interceptors>
 	
 	<bean name="handlerMapping" class="org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping"/>
+	
+	<bean id="filterMultipartResolver" class="org.springframework.web.multipart.commons.CommonsMultipartResolver">
+		<property name="maxUploadSize" value="10000000"/>
+	</bean>
+	<!-- <bean id="filterMultipartResolver" class="org.springframework.web.multipart.support.StandardServletMultipartResolver">
+	</bean> -->
+	
+	<!-- <bean id="multipartResolver" class="org.springframework.web.multipart.commons.CommonsMultipartResolver"></bean> -->
 
 	<!-- Resolves views selected for rendering by @Controllers to .jsp resources 
 		in the /WEB-INF/views directory org.springframework.web.servlet.view.UrlBasedViewResolver-->
@@ -184,7 +198,7 @@
 	    <set>
 	      <!-- Note the package would change to 'springsecurity[3|4]' if you are using that version -->
 	      <bean class="org.thymeleaf.extras.springsecurity5.dialect.SpringSecurityDialect"/>
-	      <bean class="com.spring.sample.util.ViewSupportDialect"/>
+	      <bean  class="com.spring.sample.util.ViewSupportDialect"/>
 	    </set>
 	  </property>
 	</bean>
