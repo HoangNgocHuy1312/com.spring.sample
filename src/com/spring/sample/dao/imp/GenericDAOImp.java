@@ -3,6 +3,7 @@ package com.spring.sample.dao.imp;
 import java.io.Serializable;
 import java.sql.Timestamp;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 
 import org.hibernate.LockMode;
@@ -22,12 +23,13 @@ import org.springframework.orm.hibernate5.HibernateCallback;
 import org.springframework.orm.hibernate5.support.HibernateDaoSupport;
 
 import com.spring.sample.dao.GenericDAO;
+import com.spring.sample.entity.BaseEntity;
 import com.spring.sample.util.SearchQueryTemplate;
 
 /**
  * @author ducda referenced from CaveatEmptor project tm JBoss Hibernate version
  */
-public abstract class GenericDAOImp<E, Id extends Serializable> extends HibernateDaoSupport
+public abstract class GenericDAOImp<E extends BaseEntity, Id extends Serializable> extends HibernateDaoSupport
 		implements GenericDAO<E, Id> {
 
 	private Class<E> persistentClass;
@@ -41,7 +43,7 @@ public abstract class GenericDAOImp<E, Id extends Serializable> extends Hibernat
 	}
 
 	@SuppressWarnings("unchecked")
-	public E find(Id id) throws Exception {
+	public E find(Id id) {
 		DetachedCriteria criteria = DetachedCriteria.forClass(getPersistentClass());
 		criteria.add(Restrictions.eq("id", id));
 		return (E) DataAccessUtils.uniqueResult(getHibernateTemplate().findByCriteria(criteria));
@@ -56,16 +58,16 @@ public abstract class GenericDAOImp<E, Id extends Serializable> extends Hibernat
 
 	}
 
-	public List<E> findAll() throws Exception {
+	public List<E> findAll() {
 		return findByCriteria();
 	}
 
-	public List<E> findByExample(E exampleInstance) throws Exception {
+	public List<E> findByExample(E exampleInstance) {
 		return getHibernateTemplate().findByExample(exampleInstance);
 	}
 
 	@SuppressWarnings("unchecked")
-	public List<E> findByExample(E exampleInstance, String[] excludeProperty) throws Exception {
+	public List<E> findByExample(E exampleInstance, String[] excludeProperty) {
 		DetachedCriteria criteria = DetachedCriteria.forClass(getPersistentClass());
 		Example example = Example.create(exampleInstance);
 		for (String exclude : excludeProperty) {
@@ -75,7 +77,7 @@ public abstract class GenericDAOImp<E, Id extends Serializable> extends Hibernat
 		return (List<E>) getHibernateTemplate().findByCriteria(criteria);
 	}
 
-	public int count(E exampleInstance, String[] excludeProperty, boolean isLike) throws Exception {
+	public int count(E exampleInstance, String[] excludeProperty, boolean isLike) {
 		DetachedCriteria criteria = DetachedCriteria.forClass(getPersistentClass());
 		Example example = Example.create(exampleInstance);
 		for (String exclude : excludeProperty) {
@@ -88,13 +90,13 @@ public abstract class GenericDAOImp<E, Id extends Serializable> extends Hibernat
 				getHibernateTemplate().findByCriteria(criteria.add(example).setProjection(Projections.rowCount())));
 	}
 
-	public int count() throws Exception {
+	public int count() {
 		DetachedCriteria criteria = DetachedCriteria.forClass(getPersistentClass());
 		return DataAccessUtils
 				.intResult(getHibernateTemplate().findByCriteria(criteria.setProjection(Projections.rowCount())));
 	}
 
-	public int count(Criterion... criterion) throws Exception {
+	public int count(Criterion... criterion) {
 		DetachedCriteria criteria = DetachedCriteria.forClass(getPersistentClass());
 		for (Criterion c : criterion) {
 			criteria.add(c);
@@ -104,6 +106,11 @@ public abstract class GenericDAOImp<E, Id extends Serializable> extends Hibernat
 	}
 
 	public E makePersistent(E entity) throws Exception {
+		Date currentDate = getSystemTimestamp();
+		if (entity.getCreatedAt() == null) {
+			entity.setCreatedAt(currentDate);
+		}
+		entity.setUpdatedAt(currentDate);
 		getHibernateTemplate().saveOrUpdate(entity);
 		getHibernateTemplate().flush();
 		return entity;
@@ -115,7 +122,7 @@ public abstract class GenericDAOImp<E, Id extends Serializable> extends Hibernat
 	}
 
 	@SuppressWarnings("unchecked")
-	public List<E> findByCriteria(Criterion... criterion) throws Exception {
+	public List<E> findByCriteria(Criterion... criterion) {
 		DetachedCriteria criteria = DetachedCriteria.forClass(getPersistentClass());
 		for (Criterion c : criterion) {
 			criteria.add(c);
@@ -123,7 +130,7 @@ public abstract class GenericDAOImp<E, Id extends Serializable> extends Hibernat
 		return (List<E>) getHibernateTemplate().findByCriteria(criteria);
 	}
 
-	public Timestamp getSystemTimestamp() throws Exception {
+	public Timestamp getSystemTimestamp() {
 		String sql = "SELECT CURRENT_TIMESTAMP AS systemtimestamp";
 		Object obj = getHibernateTemplate().execute(session -> session.createNativeQuery(sql).uniqueResult());
 		Timestamp syatemTimestamp = null;
@@ -133,10 +140,16 @@ public abstract class GenericDAOImp<E, Id extends Serializable> extends Hibernat
 		return syatemTimestamp;
 	}
 
-	public Page<E> find(final SearchQueryTemplate searchQueryTemplate) throws Exception {
+	public Page<E> paginate(Pageable pageable) {
+		String sql = "FROM " + getPersistentClass().getName();
+		String countSql = "SELECT COUNT(*) FROM " + getPersistentClass().getName();
+		return paginate(new SearchQueryTemplate(sql, countSql, pageable));
+	}
+
+	protected Page<E> paginate(SearchQueryTemplate searchQueryTemplate) {
 		List<E> results = getHibernateTemplate().execute(new HibernateCallback<List<E>>() {
 			public List<E> doInHibernate(Session session) {
-				Query<E> query = session.createQuery(searchQueryTemplate.getSql(), getPersistentClass());
+				Query<E> query = session.createQuery(searchQueryTemplate.getSql(true), getPersistentClass());
 				searchQueryTemplate.setPageable(query);
 				searchQueryTemplate.setParameters(query);
 				return query.list();

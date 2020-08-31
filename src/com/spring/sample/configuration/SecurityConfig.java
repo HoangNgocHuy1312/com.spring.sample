@@ -52,10 +52,21 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 //        return super.authenticationManagerBean();
 //    }
 	
+//	@Autowired
+//    public void configureGlobal(AuthenticationManagerBuilder authentication)
+//            throws Exception
+//    {
+//        authentication.inMemoryAuthentication()
+//                .withUser("admin")
+//                .password(passwordEncoder.encode("admin"))
+//                .authorities("ROLE_USER");
+//    }
+	
 	@Override
 	protected void configure(HttpSecurity http) throws Exception {
 		http.authorizeRequests()
 	        .antMatchers("/resources/**").permitAll()
+	        .antMatchers("/webjars/**").permitAll()
 	        .antMatchers("/home").permitAll()
 	        .antMatchers("/login").permitAll()
 	        .antMatchers("/signup").permitAll()
@@ -73,10 +84,10 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 	            .logoutRequestMatcher(new AntPathRequestMatcher("/logout")).logoutSuccessUrl("/login?logout").permitAll()
 	        .and().rememberMe().rememberMeParameter("remember-me").tokenValiditySeconds(60*60).useSecureCookie(true)
 	            .tokenRepository(userService).userDetailsService(userService)
-	        .and().exceptionHandling().accessDeniedHandler(accessDeniedHandler);//.accessDeniedPage("/access_denied");
-		http.csrf();//.disable()
-		http.headers();
-		http.httpBasic();
+	        .and().exceptionHandling().accessDeniedHandler(accessDeniedHandler)
+	        .and().csrf()
+	        .and().headers().contentSecurityPolicy("script-src 'self' https://trustedscripts.example.com; object-src https://trustedplugins.example.com; report-uri /csp-report-endpoint/");
+//			.httpBasic();
 	}
 	
 //	@Bean
@@ -91,7 +102,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 	
 	@Override
     public void configure(WebSecurity web) throws Exception {
-        web.ignoring().antMatchers("/resources/**", "/css/**", "/js/**", "/img/**");
+        web.ignoring().antMatchers("/resources/**", "/css/**", "/js/**", "/img/**", "/webjars/**");
     }
 	
 	@Override

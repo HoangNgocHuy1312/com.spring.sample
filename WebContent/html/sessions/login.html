@@ -24,11 +24,13 @@
       <label th:for="password" th:text="#{session.login.password}">Password</label>
       <input type="password" th:name="password" class="form-control" />
   
+  	  <label th:for="remember-me" class="checkbox inline">
       <input type="checkbox" th:name="remember-me" class="form-control" />
-      <label th:for="remember-me" th:text="#{session.login.remember}">Remember me on this computer</label>
+      <span th:text="#{session.login.remember}">Remember me on this computer</span>
+      </label>
   
       <input type="submit" value="Log in" th:attr="value=#{session.login.submit}" class="btn btn-primary"/>		
     </form>
-    <p>New user? <a href="#" th:text="#{session.login.signup}">Sign up now!</a></p>
+    <p>New user? <a th:href="@{/signup}" th:text="#{session.login.signup}">Sign up now!</a></p>
   </div>
 </div>

@@ -16,6 +16,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -34,22 +35,17 @@ import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.spring.sample.interceptor.Flash;
+import com.spring.sample.model.CustomUserDetails;
 import com.spring.sample.model.MicropostModel;
-import com.spring.sample.model.UserModel;
 import com.spring.sample.service.MicropostService;
-import com.spring.sample.service.UserService;
 
 @Controller
 @EnableWebMvc
-public class UsersController {
-	private static final Logger logger = LoggerFactory.getLogger(UsersController.class);
+public class MicropostsController {
+	private static final Logger logger = LoggerFactory.getLogger(MicropostsController.class);
 
 	@Autowired
 	MessageSource messageSource;
-
-	@Autowired
-	@Qualifier("userService")
-	UserService userService;
 
 	@Autowired
 	@Qualifier("micropostService")
@@ -62,98 +58,91 @@ public class UsersController {
 	protected void initBinder(WebDataBinder binder) {
 	}
 
-	@GetMapping(value = "/users")
+	@GetMapping(value = "/microposts")
 	public String index(@RequestParam(name = "page", required = false) Optional<Integer> page, Locale locale,
 			Model model, HttpServletRequest request) {
-		UserModel userModel = new UserModel();
-		userModel.setPage(page.orElse(1));
-		Page<UserModel> users = userService.paginate(userModel);
-		model.addAttribute("users", users);
-		return "users/index";
-	}
-	
-	@GetMapping(value = "/users/{id}")
-	public String show(@PathVariable Integer id, @RequestParam(name = "page", required = false) Optional<Integer> page, Model model) {
-		UserModel userModel = userService.findUser(id);
-		model.addAttribute("user", userModel);
 		MicropostModel micropostModel = new MicropostModel();
-		micropostModel.setUserId(userModel.getId());
 		micropostModel.setPage(page.orElse(1));
 		Page<MicropostModel> microposts = micropostService.paginate(micropostModel);
 		model.addAttribute("microposts", microposts);
-		return "users/show";
+		return "microposts/index";
 	}
 
-	@GetMapping(value = { "/users/add", "/signup" })
+	@GetMapping(value = { "/microposts/add" })
 	public String add(Locale locale, Model model) {
-		model.addAttribute("user", new UserModel());
-		return "users/add";
+		model.addAttribute("micropost", new MicropostModel());
+		return "microposts/add";
 	}
 
-	@PostMapping(value = "/users")
-	public String create(@ModelAttribute("user") @Validated UserModel userModel, BindingResult bindingResult,
-			Model model, final RedirectAttributes redirectAttributes, HttpServletRequest request) throws Exception {
+	@PostMapping(value = "/microposts")
+	public String create(@ModelAttribute("micropost") @Validated MicropostModel micropostModel,
+			BindingResult bindingResult, Model model, final RedirectAttributes redirectAttributes,
+			Authentication authentication, HttpServletRequest request) throws Exception {
 		if (bindingResult.hasErrors()) {
-			logger.info("Returning register.jsp page, validate failed");
-			return "users/add";
+			logger.info("Returning add micropost page, validate failed");
+			if (authentication != null && authentication.isAuthenticated()) {
+				CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
+				MicropostModel condition = new MicropostModel();
+				condition.setPage(1);
+				condition.setUserId(userDetails.getUser().getId());
+				Page<MicropostModel> microposts = micropostService.paginate(condition);
+				model.addAttribute("microposts", microposts);
+			}
+			return "static_pages/home";
 		}
-		UserModel user = userService.addUser(userModel);
+		if (authentication != null && authentication.isAuthenticated()) {
+			CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
+			micropostModel.setUserId(userDetails.getUser().getId());
+		}
+		micropostService.addMicropost(micropostModel);
 		// Add message to flash scope
-		flash.success("user.create.success");
+		flash.success("micropost.create.success");
 		flash.keep();
-		request.login(userModel.getEmail(), userModel.getPassword());
-		return "redirect: " + request.getContextPath() + "/users/" + user.getId();
+		return "redirect: " + request.getContextPath() + "/home";
 	}
 
-	@GetMapping(value = "/users/{id}/edit")
+	@GetMapping(value = "/microposts/{id}")
+	public String show(@PathVariable Integer id, Model model) {
+		model.addAttribute("micropost", micropostService.findMicropost(id));
+		return "microposts/show";
+	}
+
+	@GetMapping(value = "/microposts/{id}/edit")
 	public String edit(@PathVariable Integer id, Model model) {
-		model.addAttribute("user", userService.findUser(id));
-		return "users/edit";
+		model.addAttribute("micropost", micropostService.findMicropost(id));
+		return "microposts/edit";
 	}
 
-	@PutMapping(value = "/users/{id}")
-	public String update(@ModelAttribute("user") @Validated UserModel userModel, BindingResult bindingResult,
-			Model model, final RedirectAttributes redirectAttributes, HttpServletRequest request) throws Exception {
+	@PutMapping(value = "/microposts/{id}")
+	public String update(@ModelAttribute("micropost") @Validated MicropostModel micropostModel,
+			BindingResult bindingResult, Model model, final RedirectAttributes redirectAttributes,
+			HttpServletRequest request) throws Exception {
 		if (bindingResult.hasErrors()) {
 			logger.info("Returning edit.jsp page, validate failed");
-			return "users/edit";
+			return "microposts/edit";
 		}
-		UserModel user = userService.editUser(userModel);
+		MicropostModel micropost = micropostService.editMicropost(micropostModel);
 		// Add message to flash scope
-		flash.success("user.update.success");
+		flash.success("micropost.update.success");
 		flash.keep();
-		return "redirect: " + request.getContextPath() + "/users/" + user.getId();
+		return "redirect: " + request.getContextPath() + "/microposts/" + micropost.getId();
 	}
 
-	@DeleteMapping(value = "/users/{id}", produces = { MediaType.APPLICATION_FORM_URLENCODED_VALUE,
+	@DeleteMapping(value = "/microposts/{id}", produces = { MediaType.APPLICATION_FORM_URLENCODED_VALUE,
 			MediaType.APPLICATION_JSON_VALUE })
 	@ResponseBody
 	public ResponseEntity<String> destroy(@PathVariable Integer id, Model model, HttpServletRequest request,
 			HttpServletResponse response) throws Exception {
-		logger.info("Deleting user: " + id);
-//		userService.deleteUser(new UserModel(id));
+		logger.info("Deleting micropost: " + id);
+//		micropostService.deleteMicropost(new MicropostModel(id));
 		String contectType = request.getContentType();
 		if (contectType.equalsIgnoreCase(MediaType.APPLICATION_JSON_VALUE)) {
-			return new ResponseEntity<String>("{\"result\" : \"OK\", \"id\" : " + id + ", \"model\" : \"user\"}",
+			return new ResponseEntity<String>("{\"result\" : \"OK\", \"id\" : " + id + ", \"model\" : \"micropost\"}",
 					HttpStatus.OK);
 		} else {
-			response.sendRedirect(request.getContextPath() + "/users");
+			response.sendRedirect(request.getContextPath() + "/microposts");
 			return new ResponseEntity<String>(HttpStatus.OK);
 		}
-	}
-	
-	@GetMapping(value = "/users/{id}/following")
-	public String following(@PathVariable Integer id, Model model) {
-		model.addAttribute("users", userService.findAll());
-		model.addAttribute("title", "Following");
-		return "users/edit";
-	}
-	
-	@GetMapping(value = "/users/{id}/followers")
-	public String followers(@PathVariable Integer id, Model model) {
-		model.addAttribute("users", userService.findAll());
-		model.addAttribute("title", "Followers");
-		return "users/edit";
 	}
 
 }

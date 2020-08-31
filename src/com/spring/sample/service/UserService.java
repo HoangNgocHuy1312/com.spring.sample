@@ -10,6 +10,8 @@ import com.spring.sample.model.UserModel;
 
 public interface UserService extends UserDetailsService, PersistentTokenRepository {
 	public UserModel findUserByEmail(String email);
+	
+	public boolean existingEmail(String email, Integer id);
 
 	public UserModel findUser(Integer id);
 

@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head></head>
+<body>
+  <ul class="microposts">
+    <li th:fragment="copy (micropost)" th:id="'micropost-'+${micropost.id}" sec:authorize="isAuthenticated()" th:with="current_user=${#authentication.getPrincipal().user}">
+      <a th:href="@{'/users/'+${micropost.userId}}"><img th:attr="src=${#viewSupport.gravatarFor(micropost.user.email)}" class="gravatar" /></a>
+      <span class="user"><a th:href="@{'/users/'+${micropost.userId}}" th:text="${micropost.user.name}">User Name</a></span>
+      <span class="content" th:text="${micropost.content}">Content</span>
+      <th:block th:with="time=${#viewSupport.timeAgoInWords(#request.locale, micropost.createdAt)}">
+      <span class="timestamp">[[#{micropost.time_ago_in_words(${time})}]].
+        <a th:if="${current_user.id == micropost.userId}" class="delete-micropost" th:href="@{'/microposts/'+${micropost.id}}"
+          th:text="#{micropost.delete}" th:data-method="delete" th:data-id="${micropost.id}">delete</a>
+      </span>
+      </th:block>
+    </li>
+  </ul>
+</body>
+</html>

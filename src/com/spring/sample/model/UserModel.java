@@ -4,15 +4,13 @@ import javax.validation.constraints.Email;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.Size;
 
-import org.springframework.util.StringUtils;
-
-import com.spring.sample.util.CommonUtil;
 import com.spring.sample.validator.FieldMatch;
 import com.spring.sample.validator.NullOrNotBlank;
 import com.spring.sample.validator.UniqueEmail;
 
 @FieldMatch.List({
 		@FieldMatch(first = "password", second = "confirmation", message = "{user.validation.password.notmatch}") })
+@UniqueEmail(name = "email", message = "{user.validation.email.exist}")
 public class UserModel extends BaseModel {
 	private Integer id;
 	@NotEmpty(message = "{user.validation.name.required}")
@@ -20,13 +18,15 @@ public class UserModel extends BaseModel {
 	private String name;
 	@NotEmpty(message = "{user.validation.email.required}")
 	@Email(message = "{pattern.email}")
-	@UniqueEmail(message = "{user.validation.email.exist}")
 	private String email;
 	@NullOrNotBlank(message = "{user.validation.password.required}")
 	@Size(max = 64, min = 6, message = "{user.validation.password.length}")
 	private String password = null;
 	@NullOrNotBlank(message = "{user.validation.confirmation.required}")
 	private String confirmation = null;
+
+	private int role;
+	private int totalMicropost = 0;
 
 	public UserModel() {
 
@@ -82,11 +82,20 @@ public class UserModel extends BaseModel {
 		this.confirmation = confirmation;
 	}
 
-	public String getGravatarURL() {
-		if (StringUtils.isEmpty(this.email)) {
-			return "";
-		}
-		return CommonUtil.gravatarURL(this.email);
+	public int getRole() {
+		return role;
+	}
+
+	public void setRole(int role) {
+		this.role = role;
+	}
+
+	public int getTotalMicropost() {
+		return totalMicropost;
+	}
+
+	public void setTotalMicropost(int totalMicropost) {
+		this.totalMicropost = totalMicropost;
 	}
 
 }

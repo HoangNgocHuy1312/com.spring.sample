@@ -2,9 +2,10 @@ package com.spring.sample.entity;
 
 import java.io.Serializable;
 import java.util.Date;
+import java.util.List;
 
 @SuppressWarnings("serial")
-public class User implements Serializable {
+public class User extends BaseEntity implements Serializable {
 
 	private Integer id;
 	private String name;
@@ -14,6 +15,8 @@ public class User implements Serializable {
 	private String token;
 	private Date lastUsed;
 	private Integer role;
+
+	private List<Micropost> microposts;
 
 	public User() {
 
@@ -90,6 +93,14 @@ public class User implements Serializable {
 
 	public void setRole(Integer role) {
 		this.role = role;
+	}
+
+	public List<Micropost> getMicroposts() {
+		return microposts;
+	}
+
+	public void setMicroposts(List<Micropost> microposts) {
+		this.microposts = microposts;
 	}
 
 }
