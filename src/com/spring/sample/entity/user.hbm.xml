@@ -20,11 +20,37 @@
     	<property name="updatedAt" column="updated_at" type="java.util.Date"></property>
     	<property name="createdAt" column="created_at" type="java.util.Date"></property>
     	
-    	<list name = "microposts" cascade="all" lazy="true" inverse="true">
-	    	<key column = "user_id"/>
-	    	<list-index column = "id" base="1"/>
+    	<list name="microposts" cascade="all" lazy="true" inverse="true" fetch="select">
+	    	<key column="user_id"/>
+	    	<list-index column="id" base="1"/>
 	    	<one-to-many class="com.spring.sample.entity.Micropost"/>
 	    </list>
+	    
+	    <list name="activeRelationships" cascade="all" lazy="true" inverse="true" fetch="select">
+	    	<key column="follower_id"/>
+	    	<list-index column="id" base="1"/>
+	    	<one-to-many class="com.spring.sample.entity.Relationship"/>
+	    </list>
+	    
+	    <list name="passiveRelationships" cascade="all" lazy="true" inverse="true" fetch="select">
+	    	<key column="followed_id"/>
+	    	<list-index column="id" base="1"/>
+	    	<one-to-many class="com.spring.sample.entity.Relationship"/>
+	    </list>
+	    
+	    <bag name="following" table="relationship" inverse="true" lazy="true" fetch="select">
+		    <key column="follower_id"/>
+		    <many-to-many entity-name="com.spring.sample.entity.User">
+		        <column name="followed_id" not-null="true"/>
+		    </many-to-many>
+		</bag>
+		
+		<bag name="followers" table="relationship" inverse="true" lazy="true" fetch="select">
+		    <key column="followed_id"/>
+		    <many-to-many entity-name="com.spring.sample.entity.User">
+		        <column name="follower_id" not-null="true"/>
+		    </many-to-many>
+		</bag>
             
   </class>  
             

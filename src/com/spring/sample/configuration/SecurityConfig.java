@@ -80,7 +80,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 	        .anyRequest().hasAnyAuthority(Role.USER.name(), Role.ADMIN.name())
 	        .and().formLogin().loginPage("/login").failureUrl("/login?error=true")
 			    .usernameParameter("email").passwordParameter("password")
-			    .successHandler(authenticationSuccessHandler).loginProcessingUrl("/login").defaultSuccessUrl("/home").permitAll()
+			    .successHandler(authenticationSuccessHandler).loginProcessingUrl("/login").defaultSuccessUrl("/").permitAll()
 	        .and().logout().invalidateHttpSession(true).clearAuthentication(true).deleteCookies("JSESSIONID")
 	            .logoutRequestMatcher(new AntPathRequestMatcher("/logout")).logoutSuccessUrl("/login?logout").permitAll()
 	        .and().rememberMe().rememberMeParameter("remember-me").tokenValiditySeconds(60*60).useSecureCookie(true)

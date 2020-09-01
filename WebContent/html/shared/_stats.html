@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head></head>
+<body>
+<th:block th:fragment="copy(user)">
+<div class="stats">
+  <a th:href="@{'/users/'+${user.id}+'/following'}">
+  <strong id="following" class="stat" th:text="${user.totalFollowing}"></strong>
+  following
+  </a>
+  <a th:href="@{'/users/'+${user.id}+'/followers'}">
+  <strong id="followers" class="stat" th:text="${user.totalFollowers}"></strong>
+  followers
+  </a>
+</div>
+</body>
+</html>

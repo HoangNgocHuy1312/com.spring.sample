@@ -16,6 +16,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -34,6 +35,7 @@ import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.spring.sample.interceptor.Flash;
+import com.spring.sample.model.CustomUserDetails;
 import com.spring.sample.model.MicropostModel;
 import com.spring.sample.model.UserModel;
 import com.spring.sample.service.MicropostService;
@@ -71,10 +73,17 @@ public class UsersController {
 		model.addAttribute("users", users);
 		return "users/index";
 	}
-	
+
 	@GetMapping(value = "/users/{id}")
-	public String show(@PathVariable Integer id, @RequestParam(name = "page", required = false) Optional<Integer> page, Model model) {
-		UserModel userModel = userService.findUser(id);
+	public String show(@PathVariable Integer id, @RequestParam(name = "page", required = false) Optional<Integer> page,
+			Model model, Authentication authentication) {
+		CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
+		UserModel condition = new UserModel();
+		condition.setId(id);
+		if(userDetails.getUser().getId() != id) {
+			condition.setCurrentUserId(userDetails.getUser().getId());
+		}
+		UserModel userModel = userService.getUserInfo(condition);
 		model.addAttribute("user", userModel);
 		MicropostModel micropostModel = new MicropostModel();
 		micropostModel.setUserId(userModel.getId());
@@ -141,19 +150,19 @@ public class UsersController {
 			return new ResponseEntity<String>(HttpStatus.OK);
 		}
 	}
-	
-	@GetMapping(value = "/users/{id}/following")
-	public String following(@PathVariable Integer id, Model model) {
-		model.addAttribute("users", userService.findAll());
-		model.addAttribute("title", "Following");
-		return "users/edit";
-	}
-	
-	@GetMapping(value = "/users/{id}/followers")
-	public String followers(@PathVariable Integer id, Model model) {
-		model.addAttribute("users", userService.findAll());
-		model.addAttribute("title", "Followers");
-		return "users/edit";
-	}
+
+//	@GetMapping(value = "/users/{id}/following")
+//	public String following(@PathVariable Integer id, Model model) {
+//		model.addAttribute("users", userService.findAll());
+//		model.addAttribute("title", "Following");
+//		return "users/edit";
+//	}
+//
+//	@GetMapping(value = "/users/{id}/followers")
+//	public String followers(@PathVariable Integer id, Model model) {
+//		model.addAttribute("users", userService.findAll());
+//		model.addAttribute("title", "Followers");
+//		return "users/edit";
+//	}
 
 }

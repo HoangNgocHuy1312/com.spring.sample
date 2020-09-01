@@ -1,0 +1,9 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head></head>
+<body>
+  <form th:fragment="copy (user)" th:action="@{'/relationships/'+${user.id}}" th:method="DELETE">
+      <input type="submit" value="Unfollow" th:value="#{user.unfollow.submit}" class="btn btn-primary"/>
+  </form>
+</body>
+</html>

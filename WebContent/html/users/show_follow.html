@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html th:replace="~{templates/layout :: layout(~{::title}, ~{::body}, ~{})}" xmlns:th="http://www.thymeleaf.org">
 <head>
-  <title th:text="#{user.show.title}">User Info</title>
+  <title th:text="#{${follow_title}}">Following/Followers</title>
 </head>
 <body>
 <div class="row">
@@ -17,12 +17,15 @@
 	  </form>
 	</th:block>
 	</section>
+	<section class="stats">
+	  <div class="stats" th:replace="~{shared/_stats :: copy(${user})}"></div>
+	</section>
   </aside>
   <div class="col-md-8">
-    <h3 th:text="${title}">Following/Followers</h3>
+    <h3 th:text="#{${follow_title}}">Following/Followers</h3>
     <ul class="users follow">
-    <th:block th:each="user : ${users.content}">
-      <li th:replace="~{users/_user :: copy(${user})}"></li>
+    <th:block th:each="item : ${users.content}">
+      <li th:replace="~{users/_user :: copy(${item})}"></li>
     </th:block>
     </ul>
     <th:block th:if="${users.totalPages > 1}">

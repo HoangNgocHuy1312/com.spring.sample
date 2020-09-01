@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head></head>
+<body>
+<th:block th:fragment="copy (user)" sec:authorize="isAuthenticated()" th:with="current_user=${#authentication.getPrincipal().user}">
+<div id="follow_form" th:unless="${current_user.isCurrentUser(user)}">
+  <th:block th:if="${user.isFollowedByCurrentUser()}">
+  <form th:replace="~{users/_unfollow :: copy(${user})}"></form>
+  </th:block>
+  <th:block th:unless="${user.isFollowedByCurrentUser()}">
+  <form th:replace="~{users/_follow :: copy(${user})}"></form>
+  </th:block>
+</div>
+</th:block>
+</body>
+</html>

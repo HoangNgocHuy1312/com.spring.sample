@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import org.hibernate.criterion.Restrictions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
@@ -17,7 +18,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
+import com.spring.sample.dao.MicropostDAO;
+import com.spring.sample.dao.RelationshipDAO;
 import com.spring.sample.dao.UserDAO;
+import com.spring.sample.entity.Relationship;
 import com.spring.sample.entity.Role;
 import com.spring.sample.entity.User;
 import com.spring.sample.model.CustomUserDetails;
@@ -33,6 +37,12 @@ public class UserServiceImp implements UserService {
 	private UserDAO userDAO;
 
 	@Autowired
+	private RelationshipDAO relationshipDAO;
+
+	@Autowired
+	private MicropostDAO micropostDAO;
+
+	@Autowired
 	private PasswordEncoder passwordEncoder;
 
 	private UserServiceImp() {
@@ -40,6 +50,14 @@ public class UserServiceImp implements UserService {
 
 	public void setUserDAO(UserDAO userDAO) {
 		this.userDAO = userDAO;
+	}
+
+	public void setRelationshipDAO(RelationshipDAO relationshipDAO) {
+		this.relationshipDAO = relationshipDAO;
+	}
+	
+	public void setMicropostDAO(MicropostDAO micropostDAO) {
+		this.micropostDAO = micropostDAO;
 	}
 
 	public UserModel findUserByEmail(String email) {
@@ -77,6 +95,33 @@ public class UserServiceImp implements UserService {
 			if (user != null) {
 				userModel = new UserModel();
 				BeanUtils.copyProperties(user, userModel);
+			}
+			return userModel;
+		} catch (Exception e) {
+			logger.error("An error occurred while fetching the user details from the database", e);
+			return null;
+		}
+	}
+
+	public UserModel getUserInfo(UserModel condition) {
+		logger.info("Fetching the user info in the database");
+		try {
+			User user = userDAO.find(condition.getId());
+			UserModel userModel = null;
+			if (user != null) {
+				userModel = new UserModel();
+				BeanUtils.copyProperties(user, userModel);
+
+				userModel.setTotalMicropost(micropostDAO.count(Restrictions.eq("userId", condition.getId())));
+				userModel.setTotalFollowing(relationshipDAO.count(Restrictions.eq("followerId", condition.getId())));
+				userModel.setTotalFollowers(relationshipDAO.count(Restrictions.eq("followedId", condition.getId())));
+				
+				if (condition.getCurrentUserId() != null) {
+					Relationship relationship = new Relationship();
+					relationship.setFollowerId(condition.getCurrentUserId());
+					relationship.setFollowedId(condition.getId());
+					userModel.setFollowedByCurrentUser(relationshipDAO.isFollowing(relationship));
+				}
 			}
 			return userModel;
 		} catch (Exception e) {
@@ -155,6 +200,89 @@ public class UserServiceImp implements UserService {
 		return userModelList;
 	}
 
+	@Transactional
+	public boolean follow(UserModel follower, UserModel followed) {
+		try {
+			Relationship relationship = new Relationship();
+			relationship.setFollowerId(follower.getId());
+			relationship.setFollowedId(followed.getId());
+			relationshipDAO.makePersistent(relationship);
+			return true;
+		} catch (Exception e) {
+			logger.error(e.getMessage(), e);
+			return false;
+		}
+	}
+
+	@Transactional
+	public boolean unfollow(UserModel follower, UserModel followed) {
+		try {
+			Relationship condition = new Relationship();
+			condition.setFollowerId(follower.getId());
+			condition.setFollowedId(followed.getId());
+			Relationship relationship = relationshipDAO.load(condition);
+			if (relationship != null) {
+				relationshipDAO.makeTransient(relationship);
+			}
+			return true;
+		} catch (Exception e) {
+			logger.error(e.getMessage(), e);
+			return false;
+		}
+	}
+
+	public boolean isFollowing(UserModel follower, UserModel followed) {
+		try {
+			Relationship condition = new Relationship();
+			condition.setFollowerId(follower.getId());
+			condition.setFollowedId(followed.getId());
+			return relationshipDAO.isFollowing(condition);
+		} catch (Exception e) {
+			logger.error(e.getMessage(), e);
+			return false;
+		}
+	}
+
+	@Override
+	@Transactional(readOnly = true)
+	public Page<UserModel> following(UserModel userModel) {
+		logger.info("Fetching all following in the database");
+		try {
+			User condition = new User();
+			condition.setId(userModel.getId());
+			Page<User> users = userDAO.following(condition, userModel.getPageable());
+			return users.map(user -> {
+				UserModel model = new UserModel();
+				BeanUtils.copyProperties(user, model);
+				return model;
+			});
+		} catch (Exception e) {
+			logger.error("An error occurred while fetching all following from the database", e);
+			return null;
+		}
+	}
+
+	@Override
+	@Transactional(readOnly = true)
+	public Page<UserModel> followers(UserModel userModel) {
+		logger.info("Fetching all followers in the database");
+		try {
+			User condition = new User();
+			condition.setId(userModel.getId());
+			Page<User> users = userDAO.followers(condition, userModel.getPageable());
+			return users.map(user -> {
+				UserModel model = new UserModel();
+				BeanUtils.copyProperties(user, model);
+				return model;
+			});
+		} catch (Exception e) {
+			logger.error("An error occurred while fetching all followers from the database", e);
+			return null;
+		}
+	}
+
+	@Override
+	@Transactional(readOnly = true)
 	public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
 		User user = userDAO.findUserByEmail(email);
 		if (user == null) {

@@ -17,6 +17,12 @@ public class User extends BaseEntity implements Serializable {
 	private Integer role;
 
 	private List<Micropost> microposts;
+	
+	private List<Relationship> activeRelationships;
+	private List<Relationship> passiveRelationships;
+	
+	private List<User> following;
+	private List<User> followers;
 
 	public User() {
 
@@ -101,6 +107,38 @@ public class User extends BaseEntity implements Serializable {
 
 	public void setMicroposts(List<Micropost> microposts) {
 		this.microposts = microposts;
+	}
+
+	public List<Relationship> getActiveRelationships() {
+		return activeRelationships;
+	}
+
+	public void setActiveRelationships(List<Relationship> activeRelationships) {
+		this.activeRelationships = activeRelationships;
+	}
+
+	public List<Relationship> getPassiveRelationships() {
+		return passiveRelationships;
+	}
+
+	public void setPassiveRelationships(List<Relationship> passiveRelationships) {
+		this.passiveRelationships = passiveRelationships;
+	}
+
+	public List<User> getFollowing() {
+		return following;
+	}
+
+	public void setFollowing(List<User> following) {
+		this.following = following;
+	}
+
+	public List<User> getFollowers() {
+		return followers;
+	}
+
+	public void setFollowers(List<User> followers) {
+		this.followers = followers;
 	}
 
 }

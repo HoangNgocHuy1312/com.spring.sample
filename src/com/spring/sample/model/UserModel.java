@@ -27,6 +27,10 @@ public class UserModel extends BaseModel {
 
 	private int role;
 	private int totalMicropost = 0;
+	private boolean followedByCurrentUser = false;
+	private int totalFollowing = 0;
+	private int totalFollowers = 0;
+	private Integer currentUserId = null;
 
 	public UserModel() {
 
@@ -96,6 +100,42 @@ public class UserModel extends BaseModel {
 
 	public void setTotalMicropost(int totalMicropost) {
 		this.totalMicropost = totalMicropost;
+	}
+
+	public boolean isCurrentUser(UserModel userModel) {
+		return userModel != null && this.getId() == userModel.getId();
+	}
+
+	public void setFollowedByCurrentUser(boolean followedByCurrentUser) {
+		this.followedByCurrentUser = followedByCurrentUser;
+	}
+
+	public boolean isFollowedByCurrentUser() {
+		return followedByCurrentUser;
+	}
+
+	public int getTotalFollowing() {
+		return totalFollowing;
+	}
+
+	public void setTotalFollowing(int totalFollowing) {
+		this.totalFollowing = totalFollowing;
+	}
+
+	public int getTotalFollowers() {
+		return totalFollowers;
+	}
+
+	public void setTotalFollowers(int totalFollowers) {
+		this.totalFollowers = totalFollowers;
+	}
+
+	public Integer getCurrentUserId() {
+		return currentUserId;
+	}
+
+	public void setCurrentUserId(Integer currentUserId) {
+		this.currentUserId = currentUserId;
 	}
 
 }

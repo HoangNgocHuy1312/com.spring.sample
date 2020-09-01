@@ -17,8 +17,12 @@
 	    </form>
 	    </th:block>
 	</section>
+	<section class="stats">
+	  <div class="stats" th:replace="~{shared/_stats :: copy(${user})}"></div>
+	</section>
   </aside>
   <div class="col-md-8">
+    <div id="follow_form" th:replace="~{users/_follow_form :: copy(${user})}"></div>
     <h3>Microposts ([[${microposts.totalElements}]])</h3>
     <ol class="microposts">
     <th:block th:each="micropost : ${microposts.content}">

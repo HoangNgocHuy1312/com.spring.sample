@@ -58,7 +58,7 @@ public class SimpleUrlAuthenticationSuccessHandler implements AuthenticationSucc
 			authorityNames.add(grantedAuthority.getAuthority());
 		}
 		if (authorityNames.contains(Role.USER.name())) {
-			return "/home";
+			return "/";
 		}
 		if (authorityNames.contains(Role.ADMIN.name())) {
 			return "/admin";

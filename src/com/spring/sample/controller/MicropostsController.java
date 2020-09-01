@@ -97,9 +97,11 @@ public class MicropostsController {
 			}
 			return "static_pages/home";
 		}
-		ImageUpload imageUpload = imageUploader.uploadFile(micropostModel.getFile());
-		if (imageUpload != null) {
-			micropostModel.setUpload(imageUpload);
+		if(!micropostModel.getFile().isEmpty()) {
+			ImageUpload imageUpload = imageUploader.uploadFile(micropostModel.getFile());
+			if (imageUpload != null) {
+				micropostModel.setUpload(imageUpload);
+			}
 		}
 		if (authentication != null && authentication.isAuthenticated()) {
 			CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();

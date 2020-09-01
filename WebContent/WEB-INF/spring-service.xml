@@ -10,6 +10,8 @@
    	<bean id="userService" class="com.spring.sample.service.imp.UserServiceImp">
 		<qualifier value="userService"/>
     	<property name="userDAO" ref="userDAO" />
+    	<property name="relationshipDAO" ref="relationshipDAO" />
+    	<property name="micropostDAO" ref="micropostDAO" />
     </bean>
     
     <bean id="micropostService" class="com.spring.sample.service.imp.MicropostServiceImp">

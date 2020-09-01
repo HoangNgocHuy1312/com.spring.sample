@@ -7,12 +7,16 @@ import org.hibernate.Session;
 import org.hibernate.query.Query;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort.Direction;
 import org.springframework.orm.hibernate5.HibernateCallback;
 import org.springframework.stereotype.Repository;
 
 import com.spring.sample.dao.UserDAO;
 import com.spring.sample.entity.User;
 import com.spring.sample.util.CommonUtil;
+import com.spring.sample.util.SearchQueryTemplate;
 
 @Repository
 public class UserDAOImp extends GenericDAOImp<User, Integer> implements UserDAO {
@@ -24,56 +28,61 @@ public class UserDAOImp extends GenericDAOImp<User, Integer> implements UserDAO 
 
 	public User findUser(User user) {
 		logger.info("Finding the user in the database");
-		try {
-			List<User> userList = (List<User>) getHibernateTemplate().findByExample(user);
-			if (!CommonUtil.isEmpty(userList)) {
-				return userList.get(0);
-			} else {
-				return null;
-			}
-		} catch (Exception e) {
-			logger.error("An error occurred while fetching the user details from the database", e);
+		List<User> userList = (List<User>) getHibernateTemplate().findByExample(user);
+		if (!CommonUtil.isEmpty(userList)) {
+			return userList.get(0);
+		} else {
 			return null;
 		}
 	}
 
 	public User findUserByEmail(String email) {
 		logger.info("Finding the user by email in the database");
-		try {
-			return getHibernateTemplate().execute(new HibernateCallback<User>() {
-				public User doInHibernate(Session session) throws HibernateException {
-					Query<User> query = session.createQuery("FROM User WHERE email = :email", User.class);
-					query.setParameter("email", email);
-					return query.uniqueResult();
-				}
-			});
-		} catch (Exception e) {
-			logger.error("An error occurred while fetching the user details by email from the database", e);
-			return null;
-		}
+		return getHibernateTemplate().execute(new HibernateCallback<User>() {
+			public User doInHibernate(Session session) throws HibernateException {
+				Query<User> query = session.createQuery("FROM User WHERE email = :email", User.class);
+				query.setParameter("email", email);
+				return query.uniqueResult();
+			}
+		});
 	}
 
 	public boolean existingEmail(String email, Integer id) {
 		logger.info("Finding the user by email in the database");
-		try {
-			return getHibernateTemplate().execute(new HibernateCallback<Long>() {
-				public Long doInHibernate(Session session) throws HibernateException {
-					String sql = "SELECT COUNT(*) FROM User WHERE email = :email";
-					if (id != null) {
-						sql += " AND id <> :id";
-					}
-					Query<Long> query = session.createQuery(sql, Long.class);
-					query.setParameter("email", email);
-					if (id != null) {
-						query.setParameter("id", id);
-					}
-					return query.uniqueResult();
+		return getHibernateTemplate().execute(new HibernateCallback<Long>() {
+			public Long doInHibernate(Session session) throws HibernateException {
+				String sql = "SELECT COUNT(*) FROM User WHERE email = :email";
+				if (id != null) {
+					sql += " AND id <> :id";
 				}
-			}) > 0;
-		} catch (Exception e) {
-			logger.error("An error occurred while fetching the user details by email from the database", e);
-			return true;
-		}
+				Query<Long> query = session.createQuery(sql, Long.class);
+				query.setParameter("email", email);
+				if (id != null) {
+					query.setParameter("id", id);
+				}
+				return query.uniqueResult();
+			}
+		}) > 0;
+	}
+
+	@Override
+	public Page<User> following(User user, Pageable pageable) {
+		String sql = "SELECT following FROM User AS user INNER JOIN user.following AS following WHERE user.id = :userId";
+		String countSql = "SELECT COUNT(*) FROM User AS user INNER JOIN user.following AS following WHERE user.id = :userId";
+		SearchQueryTemplate searchQueryTemplate = new SearchQueryTemplate(sql, countSql, pageable);
+		searchQueryTemplate.addParameter("userId", user.getId());
+		searchQueryTemplate.addOrder(Direction.DESC, "user.createdAt");
+		return paginate(searchQueryTemplate);
+	}
+
+	@Override
+	public Page<User> followers(User user, Pageable pageable) {
+		String sql = "SELECT followers FROM User AS user INNER JOIN user.followers AS followers WHERE user.id = :userId";
+		String countSql = "SELECT COUNT(*) FROM User AS user INNER JOIN user.followers AS followers WHERE user.id = :userId";
+		SearchQueryTemplate searchQueryTemplate = new SearchQueryTemplate(sql, countSql, pageable);
+		searchQueryTemplate.addParameter("userId", user.getId());
+		searchQueryTemplate.addOrder(Direction.DESC, "user.createdAt");
+		return paginate(searchQueryTemplate);
 	}
 
 }

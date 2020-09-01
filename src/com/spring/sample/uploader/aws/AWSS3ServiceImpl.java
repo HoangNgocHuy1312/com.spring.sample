@@ -3,14 +3,12 @@ package com.spring.sample.uploader.aws;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.spring.sample.service.AWSS3Service;
-
 //import com.amazonaws.AmazonServiceException;
 //import com.amazonaws.services.s3.AmazonS3;
 //import com.amazonaws.services.s3.model.PutObjectRequest;
 
 @Service
-public class AWSS3ServiceImpl implements AWSS3Service {
+public class AWSS3ServiceImpl {
 
 //    private static final Logger LOGGER = LoggerFactory.getLogger(AWSS3ServiceImpl.class);
 // 
@@ -19,7 +17,6 @@ public class AWSS3ServiceImpl implements AWSS3Service {
 //    @Value("${aws.s3.bucket}")
 //    private String bucketName;
 // 
-	@Override
 //    // @Async annotation ensures that the method is executed in a different background thread 
 //    // but not consume the main thread.
 //    @Async

@@ -8,6 +8,9 @@
 <div class="row">
   <aside class="col-md-4">
     <section class="user_info" th:insert="~{shared/_user_info :: copy}"></section>
+    <section class="stats">
+	  <div class="stats" th:replace="~{shared/_stats :: copy(${user})}"></div>
+	</section>
     <section class="micropost_form">
       <form th:replace="~{shared/_micropost_form :: copy(${micropost})}"></form>
     </section>
