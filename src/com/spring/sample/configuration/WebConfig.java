@@ -6,6 +6,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
+import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
 import org.springframework.format.FormatterRegistry;
 import org.springframework.format.datetime.standard.DateTimeFormatterRegistrar;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
@@ -28,12 +29,17 @@ public class WebConfig implements WebMvcConfigurer {
 	public ImageUploader getImageUploader() {
 		return applicationContext.getBean(storageService + "Uploader", ImageUploader.class);
 	}
-	
+
 	@Override
 	public void addFormatters(FormatterRegistry registry) {
 		DateTimeFormatterRegistrar registrar = new DateTimeFormatterRegistrar();
 		registrar.setUseIsoFormat(true);
 		registrar.registerFormatters(registry);
+	}
+
+	@Bean // This is required to be able to access the property file parameters
+	public static PropertySourcesPlaceholderConfigurer propertySourcesPlaceholderConfigurer() {
+		return new PropertySourcesPlaceholderConfigurer();
 	}
 
 }

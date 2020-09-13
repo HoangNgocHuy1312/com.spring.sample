@@ -24,6 +24,12 @@
        		<param-value>/WEB-INF/spring-context.xml</param-value>
     		</init-param>
         <load-on-startup>1</load-on-startup>
+        <multipart-config>
+    		<location>/tmp</location>
+    		<max-request-size>418018841</max-request-size>
+    		<max-file-size>20848820</max-file-size>
+    		<file-size-threshold>1048576</file-size-threshold>
+		</multipart-config>
     </servlet>
  
     <servlet-mapping>
@@ -47,13 +53,6 @@
 		<filter-name>springSecurityFilterChain</filter-name>
 		<url-pattern>/*</url-pattern>
 	</filter-mapping>
-	
-	<multipart-config>
-    	<location>/tmp</location>
-    	<max-request-size>418018841</max-request-size>
-    	<max-file-size>20848820</max-file-size>
-    	<file-size-threshold>1048576</file-size-threshold>
-	</multipart-config>
 	
 	<filter>
 	    <filter-name>encodingFilter</filter-name>

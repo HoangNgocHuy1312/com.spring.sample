@@ -17,6 +17,11 @@
     	<property name="token" column="token" type="string"></property>
     	<property name="lastUsed" column="last_used" type="java.util.Date"></property>
     	<property name="role" column="role" type="int"></property>
+    	<property name="activationDigest" column="activation_digest" type="string"></property>
+    	<property name="activated" column="activated" type="int"></property>
+    	<property name="activatedAt" column="activated_at" type="java.util.Date"></property>
+    	<property name="resetDigest" column="reset_digest" type="string"></property>
+    	<property name="resetSentAt" column="reset_sent_at" type="java.util.Date"></property>
     	<property name="updatedAt" column="updated_at" type="java.util.Date"></property>
     	<property name="createdAt" column="created_at" type="java.util.Date"></property>
     	

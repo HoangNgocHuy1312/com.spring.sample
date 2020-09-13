@@ -85,7 +85,7 @@ public class RelationshipsController {
 
 	@PostMapping(value = "/relationships")
 	public String create(@RequestParam Integer followedId, Locale locale, Model model, HttpServletRequest request,
-			Authentication authentication) {
+			Authentication authentication) throws Exception  {
 		logger.info("follow user");
 		CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
 		UserModel follower = userDetails.getUser();

@@ -7,7 +7,6 @@ import java.util.Date;
 import java.util.List;
 
 import org.hibernate.LockMode;
-import org.hibernate.Session;
 import org.hibernate.criterion.Criterion;
 import org.hibernate.criterion.DetachedCriteria;
 import org.hibernate.criterion.Example;
@@ -19,7 +18,6 @@ import org.springframework.dao.support.DataAccessUtils;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
-import org.springframework.orm.hibernate5.HibernateCallback;
 import org.springframework.orm.hibernate5.support.HibernateDaoSupport;
 
 import com.spring.sample.dao.GenericDAO;
@@ -63,7 +61,7 @@ public abstract class GenericDAOImp<E extends BaseEntity, Id extends Serializabl
 	}
 
 	public List<E> findByExample(E exampleInstance) {
-		return getHibernateTemplate().findByExample(exampleInstance);
+		return getHibernateTemplate().<E>findByExample(exampleInstance);
 	}
 
 	@SuppressWarnings("unchecked")
@@ -147,21 +145,17 @@ public abstract class GenericDAOImp<E extends BaseEntity, Id extends Serializabl
 	}
 
 	protected Page<E> paginate(SearchQueryTemplate searchQueryTemplate) {
-		List<E> results = getHibernateTemplate().execute(new HibernateCallback<List<E>>() {
-			public List<E> doInHibernate(Session session) {
-				Query<E> query = session.createQuery(searchQueryTemplate.getSql(true), getPersistentClass());
-				searchQueryTemplate.setPageable(query);
-				searchQueryTemplate.setParameters(query);
-				return query.list();
-			}
+		List<E> results = getHibernateTemplate().execute(session -> {
+			Query<E> query = session.createQuery(searchQueryTemplate.getSql(true), getPersistentClass());
+			searchQueryTemplate.setPageable(query);
+			searchQueryTemplate.setParameters(query);
+			return query.list();
 		});
 
-		Long count = getHibernateTemplate().execute(new HibernateCallback<Long>() {
-			public Long doInHibernate(Session session) {
-				Query<Long> query = session.createQuery(searchQueryTemplate.getCountSql(), Long.class);
-				searchQueryTemplate.setParameters(query);
-				return query.uniqueResult();
-			}
+		Long count = getHibernateTemplate().execute(session -> {
+			Query<Long> query = session.createQuery(searchQueryTemplate.getCountSql(), Long.class);
+			searchQueryTemplate.setParameters(query);
+			return query.uniqueResult();
 		});
 
 		return wrapResult(results, searchQueryTemplate.getPageable(), count);

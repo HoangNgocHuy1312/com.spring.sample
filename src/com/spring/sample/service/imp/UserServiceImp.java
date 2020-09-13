@@ -3,13 +3,18 @@ package com.spring.sample.service.imp;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
+import java.util.stream.Collectors;
 
 import org.hibernate.criterion.Restrictions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.PropertySource;
 import org.springframework.data.domain.Page;
+import org.springframework.lang.NonNull;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -18,6 +23,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
+import com.github.sonus21.rqueue.core.RqueueMessageSender;
 import com.spring.sample.dao.MicropostDAO;
 import com.spring.sample.dao.RelationshipDAO;
 import com.spring.sample.dao.UserDAO;
@@ -27,8 +33,10 @@ import com.spring.sample.entity.User;
 import com.spring.sample.model.CustomUserDetails;
 import com.spring.sample.model.UserModel;
 import com.spring.sample.service.UserService;
+import com.spring.sample.util.Constants;
 
 @Service
+@PropertySource("classpath:application.properties")
 public class UserServiceImp implements UserService {
 
 	private static final Logger logger = LoggerFactory.getLogger(UserServiceImp.class);
@@ -45,6 +53,9 @@ public class UserServiceImp implements UserService {
 	@Autowired
 	private PasswordEncoder passwordEncoder;
 
+	@Autowired
+	private @NonNull RqueueMessageSender rqueueMessageSender;
+
 	private UserServiceImp() {
 	}
 
@@ -55,24 +66,22 @@ public class UserServiceImp implements UserService {
 	public void setRelationshipDAO(RelationshipDAO relationshipDAO) {
 		this.relationshipDAO = relationshipDAO;
 	}
-	
+
 	public void setMicropostDAO(MicropostDAO micropostDAO) {
 		this.micropostDAO = micropostDAO;
 	}
 
-	public UserModel findUserByEmail(String email) {
+	public Optional<UserModel> findUserByEmail(String email) {
 		logger.info("Fetching the user by email in the database");
 		try {
-			User user = userDAO.findUserByEmail(email);
-			UserModel userModel = null;
-			if (user != null) {
-				userModel = new UserModel();
+			return Optional.ofNullable(userDAO.findUserByEmail(email)).map((user) -> {
+				UserModel userModel = new UserModel();
 				BeanUtils.copyProperties(user, userModel);
-			}
-			return userModel;
+				return userModel;
+			});
 		} catch (Exception e) {
 			logger.error("An error occurred while fetching the user details by email from the database", e);
-			return null;
+			return Optional.empty();
 		}
 	}
 
@@ -87,16 +96,14 @@ public class UserServiceImp implements UserService {
 		}
 	}
 
-	public UserModel findUser(Integer id) {
+	public Optional<UserModel> findUser(Integer id) {
 		logger.info("Checking the user in the database");
 		try {
-			User user = userDAO.find(id);
-			UserModel userModel = null;
-			if (user != null) {
-				userModel = new UserModel();
+			return Optional.ofNullable(userDAO.find(id)).map((user) -> {
+				UserModel userModel = new UserModel();
 				BeanUtils.copyProperties(user, userModel);
-			}
-			return userModel;
+				return userModel;
+			});
 		} catch (Exception e) {
 			logger.error("An error occurred while fetching the user details from the database", e);
 			return null;
@@ -107,15 +114,14 @@ public class UserServiceImp implements UserService {
 		logger.info("Fetching the user info in the database");
 		try {
 			User user = userDAO.find(condition.getId());
-			UserModel userModel = null;
+			UserModel userModel = new UserModel();
 			if (user != null) {
-				userModel = new UserModel();
 				BeanUtils.copyProperties(user, userModel);
 
 				userModel.setTotalMicropost(micropostDAO.count(Restrictions.eq("userId", condition.getId())));
 				userModel.setTotalFollowing(relationshipDAO.count(Restrictions.eq("followerId", condition.getId())));
 				userModel.setTotalFollowers(relationshipDAO.count(Restrictions.eq("followedId", condition.getId())));
-				
+
 				if (condition.getCurrentUserId() != null) {
 					Relationship relationship = new Relationship();
 					relationship.setFollowerId(condition.getCurrentUserId());
@@ -134,14 +140,20 @@ public class UserServiceImp implements UserService {
 	public UserModel addUser(UserModel userModel) throws Exception {
 		logger.info("Adding the user in the database");
 		try {
+			String token = UUID.randomUUID().toString();
+
 			User condition = new User();
 			condition.setName(userModel.getName());
 			condition.setEmail(userModel.getEmail());
 			condition.setPassword(passwordEncoder.encode(userModel.getPassword()));
 			condition.setRole(Role.USER_ROLE);
+			condition.unactivate();
+			condition.setActivationDigest(token);
 			User user = userDAO.makePersistent(condition);
 			userModel = new UserModel();
 			BeanUtils.copyProperties(user, userModel);
+
+			rqueueMessageSender.enqueue(Constants.ACCOUNT_ACTIVATION_QUEUE, userModel);
 			return userModel;
 		} catch (Exception e) {
 			logger.error("An error occurred while adding the user details to the database", e);
@@ -189,11 +201,11 @@ public class UserServiceImp implements UserService {
 		List<UserModel> userModelList = new ArrayList<UserModel>();
 		try {
 			List<User> userList = userDAO.findAll();
-			for (User user : userList) {
+			return userList.stream().map(user -> {
 				UserModel userModel = new UserModel();
 				BeanUtils.copyProperties(user, userModel);
-				userModelList.add(userModel);
-			}
+				return userModel;
+			}).collect(Collectors.toList());
 		} catch (Exception e) {
 			logger.error("An error occurred while fetching all users from the database", e);
 		}
@@ -201,7 +213,7 @@ public class UserServiceImp implements UserService {
 	}
 
 	@Transactional
-	public boolean follow(UserModel follower, UserModel followed) {
+	public boolean follow(UserModel follower, UserModel followed) throws Exception {
 		try {
 			Relationship relationship = new Relationship();
 			relationship.setFollowerId(follower.getId());
@@ -210,12 +222,12 @@ public class UserServiceImp implements UserService {
 			return true;
 		} catch (Exception e) {
 			logger.error(e.getMessage(), e);
-			return false;
+			throw e;
 		}
 	}
 
 	@Transactional
-	public boolean unfollow(UserModel follower, UserModel followed) {
+	public boolean unfollow(UserModel follower, UserModel followed) throws Exception {
 		try {
 			Relationship condition = new Relationship();
 			condition.setFollowerId(follower.getId());
@@ -227,7 +239,7 @@ public class UserServiceImp implements UserService {
 			return true;
 		} catch (Exception e) {
 			logger.error(e.getMessage(), e);
-			return false;
+			throw e;
 		}
 	}
 
@@ -240,6 +252,79 @@ public class UserServiceImp implements UserService {
 		} catch (Exception e) {
 			logger.error(e.getMessage(), e);
 			return false;
+		}
+	}
+
+	@Transactional
+	public boolean createActivationDigest(UserModel userModel) throws Exception {
+		logger.info("Updating the user in the database");
+		try {
+			User user = userDAO.find(userModel.getId(), true);
+			if (StringUtils.hasText(userModel.getActivationDigest())) {
+				user.setActivationDigest(userModel.getActivationDigest());
+				user.unactivate();
+			}
+			userDAO.makePersistent(user);
+			return true;
+		} catch (Exception e) {
+			logger.error("An error occurred while updating the user details to the database", e);
+			throw e;
+		}
+	}
+
+	@Transactional
+	public boolean createPasswordReset(final UserModel userModel) throws Exception {
+		logger.info("Create password reset for the user in the database");
+		try {
+			final User user = userDAO.findUserByEmail(userModel.getEmail());
+			if (user == null) {
+				return false;
+			}
+
+			final String token = UUID.randomUUID().toString();
+			user.setResetDigest(token);
+			user.setResetSentAt(userDAO.getSystemTimestamp());
+			userDAO.makePersistent(user);
+
+			UserModel event = new UserModel();
+			BeanUtils.copyProperties(user, event);
+			rqueueMessageSender.enqueue(Constants.PASSWORD_RESET_QUEUE, userModel);
+			return true;
+		} catch (Exception e) {
+			logger.error("An error occurred while create password reset for the user to the database", e);
+			throw e;
+		}
+	}
+
+	@Transactional
+	public boolean active(UserModel userModel) throws Exception {
+		logger.info("Active for the user in the database");
+		try {
+			User user = userDAO.find(userModel.getId(), true);
+			user.activate();
+			user.setActivatedAt(userDAO.getSystemTimestamp());
+			userDAO.makePersistent(user);
+			return true;
+		} catch (Exception e) {
+			logger.error(e.getMessage(), e);
+			throw e;
+		}
+	}
+
+	@Transactional
+	public boolean changeUserPassword(final UserModel userModel) throws Exception {
+		logger.info("Reset password for the user in the database");
+		try {
+			User user = userDAO.findUserByEmail(userModel.getEmail());
+			if (user == null) {
+				return false;
+			}
+			user.setPassword(passwordEncoder.encode(userModel.getPassword()));
+			userDAO.makePersistent(user);
+			return true;
+		} catch (Exception e) {
+			logger.error(e.getMessage(), e);
+			throw e;
 		}
 	}
 
@@ -356,6 +441,7 @@ public class UserServiceImp implements UserService {
 	}
 
 	@Override
+	@Transactional(readOnly = true)
 	public Page<UserModel> paginate(UserModel userModel) {
 		try {
 			Page<User> users = userDAO.paginate(userModel.getPageable());

@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html th:replace="~{templates/layout :: layout(~{::title}, ~{::body}, ~{})}" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+  <title th:text="#{password_reset.add.title}">Forgot password</title>
+</head>
+<body>
+<h1 th:text="#{password_reset.add.title}">Forgot password</h1>
+<div class="row">
+  <div class="col-md-6 col-md-offset-3">
+    <form th:method="POST" th:action="@{/password_resets}" enctype="utf8">
+      <label th:for="email" th:text="#{password_reset.add.email}">Email</label>
+      <input type="email" th:name="email" class="form-control" required="required" autofocus="autofocus" />
+  
+      <input type="submit" value="Submit" th:attr="value=#{password_reset.add.submit}" class="btn btn-primary"/>		
+    </form>
+  </div>
+</div>

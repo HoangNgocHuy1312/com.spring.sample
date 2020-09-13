@@ -6,7 +6,7 @@ import java.util.List;
 
 @SuppressWarnings("serial")
 public class User extends BaseEntity implements Serializable {
-
+	
 	private Integer id;
 	private String name;
 	private String email;
@@ -15,6 +15,11 @@ public class User extends BaseEntity implements Serializable {
 	private String token;
 	private Date lastUsed;
 	private Integer role;
+	private String activationDigest;
+	private Integer activated;
+	private Date activatedAt;
+	private String resetDigest;
+	private Date resetSentAt;
 
 	private List<Micropost> microposts;
 	
@@ -99,6 +104,58 @@ public class User extends BaseEntity implements Serializable {
 
 	public void setRole(Integer role) {
 		this.role = role;
+	}
+
+	public String getActivationDigest() {
+		return activationDigest;
+	}
+
+	public void setActivationDigest(String activationDigest) {
+		this.activationDigest = activationDigest;
+	}
+
+	public Integer getActivated() {
+		return activated;
+	}
+	
+	public boolean activated() {
+		return activated == Activation.ACTIVATED.value;
+	}
+
+	public void setActivated(Integer activated) {
+		this.activated = activated;
+	}
+	
+	public void activate() {
+		this.activated = Activation.ACTIVATED.value;
+	}
+	
+	public void unactivate() {
+		this.activated = Activation.UNACTIVATED.value;
+	}
+	
+	public Date getActivatedAt() {
+		return activatedAt;
+	}
+
+	public void setActivatedAt(Date activatedAt) {
+		this.activatedAt = activatedAt;
+	}
+
+	public String getResetDigest() {
+		return resetDigest;
+	}
+
+	public void setResetDigest(String resetDigest) {
+		this.resetDigest = resetDigest;
+	}
+
+	public Date getResetSentAt() {
+		return resetSentAt;
+	}
+
+	public void setResetSentAt(Date resetSentAt) {
+		this.resetSentAt = resetSentAt;
 	}
 
 	public List<Micropost> getMicroposts() {

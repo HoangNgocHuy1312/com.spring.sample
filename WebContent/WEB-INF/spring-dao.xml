@@ -18,5 +18,9 @@
    <bean id="relationshipDAO" class="com.spring.sample.dao.imp.RelationshipDAOImp">
       <property name="hibernateTemplate" ref="hibernateTemplate" />
    </bean>
+   
+   <bean id="contactDAO" class="com.spring.sample.dao.imp.ContactDAOImp">
+      <property name="hibernateTemplate" ref="hibernateTemplate" />
+   </bean>
 
 </beans>

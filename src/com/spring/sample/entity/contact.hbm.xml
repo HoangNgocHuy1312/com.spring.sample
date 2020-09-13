@@ -1,0 +1,20 @@
+<?xml version='1.0' encoding='UTF-8'?>  
+<!DOCTYPE hibernate-mapping PUBLIC  
+ "-//Hibernate/Hibernate Mapping DTD 5.3//EN"  
+ "http://www.hibernate.org/dtd/hibernate-mapping-3.0.dtd">
+ <!-- "classpath://org/hibernate/hibernate-configuration-3.0.dtd" --> 
+  
+<hibernate-mapping>  
+	<class name="com.spring.sample.entity.Contact" table="contact">  
+    	<id name="id" column="id" type="int"> 
+     		<generator class="native"></generator>  
+    	</id>  
+            
+    	<property name="title" column="title" type="string"></property>
+    	<property name="message" column="message" type="string"></property>
+    	<property name="updatedAt" column="updated_at" type="java.util.Date"></property>
+    	<property name="createdAt" column="created_at" type="java.util.Date"></property>
+            
+  </class>  
+            
+</hibernate-mapping>  

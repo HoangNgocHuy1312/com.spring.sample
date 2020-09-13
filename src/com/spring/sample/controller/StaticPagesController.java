@@ -14,14 +14,18 @@ import org.springframework.data.domain.Page;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import com.spring.sample.interceptor.Flash;
+import com.spring.sample.model.ContactModel;
 import com.spring.sample.model.CustomUserDetails;
 import com.spring.sample.model.MicropostModel;
 import com.spring.sample.model.UserModel;
+import com.spring.sample.service.ContactService;
 import com.spring.sample.service.MicropostService;
 import com.spring.sample.service.UserService;
 import com.spring.sample.uploader.ImageUploader;
@@ -41,6 +45,10 @@ public class StaticPagesController {
 	@Autowired
 	@Qualifier("micropostService")
 	MicropostService micropostService;
+	
+	@Autowired
+	@Qualifier("contactService")
+	ContactService contactService;
 
 	@Autowired
 	@Qualifier("imageUploader")
@@ -87,10 +95,24 @@ public class StaticPagesController {
 		logger.info("Home Page Requested, locale = " + locale);
 		return "static_pages/contact";
 	}
+	
+	@PostMapping(value="/contact")
+	public String addContact(@ModelAttribute ContactModel contactModel, Locale locale, Model model) throws Exception {
+		logger.info("--------------" + contactModel.getTitle());
+		contactService.addContact(contactModel);
+		return "static_pages/contact";
+	}
 
 	@RequestMapping(value = { "/access_denied" }, method = RequestMethod.GET)
 	public String accessDenied() {
 		logger.info("Access denied");
 		return "access_denied";
 	}
+	
+	@RequestMapping(value = { "/invalid_session" }, method = RequestMethod.GET)
+	public String invalidSession() {
+		logger.info("Invalid session");
+		return "invalid_session";
+	}
+	
 }

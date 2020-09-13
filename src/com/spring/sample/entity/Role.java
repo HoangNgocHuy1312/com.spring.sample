@@ -1,7 +1,12 @@
 package com.spring.sample.entity;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
+import java.util.stream.Collectors;
+
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
 public enum Role {
 	USER(1), ADMIN(2);
@@ -45,10 +50,10 @@ public enum Role {
 	public static boolean hasAdminRole(int role) {
 		return (role & Role.ADMIN.value) == Role.ADMIN.value;
 	}
-	
+
 	public static List<Role> toList(int role) {
 		List<Role> roles = new ArrayList<Role>();
-		if(noRole(role)) {
+		if (noRole(role)) {
 			return roles;
 		}
 		if ((role & Role.USER.value) == Role.USER.value) {
@@ -58,6 +63,11 @@ public enum Role {
 			roles.add(Role.ADMIN);
 		}
 		return roles;
+	}
+
+	public static Collection<? extends GrantedAuthority> mapRolesToAuthorities(int value) {
+		return Role.toList(value).stream().map(role -> new SimpleGrantedAuthority(role.name()))
+				.collect(Collectors.toList());
 	}
 
 }

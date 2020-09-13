@@ -3,7 +3,7 @@
 <head></head>
 <body>
   <ul class="users">
-    <li th:id="'user-'+${user.id}" th:fragment="copy (user)" 
+    <li th:fragment="copy (user)" th:id="'user-'+${user.id}"  
       sec:authorize="isAuthenticated()" th:with="current_user=${#authentication.getPrincipal().user}">
       <img th:attr="src=${#viewSupport.gravatarFor(user.email)}" class="gravatar" />
       <a th:href="@{'/users/'+${user.id}}" th:text="${user.name}"></a>

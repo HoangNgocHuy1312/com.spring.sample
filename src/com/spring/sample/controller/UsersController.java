@@ -80,7 +80,7 @@ public class UsersController {
 		CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
 		UserModel condition = new UserModel();
 		condition.setId(id);
-		if(userDetails.getUser().getId() != id) {
+		if (userDetails.getUser().getId() != id) {
 			condition.setCurrentUserId(userDetails.getUser().getId());
 		}
 		UserModel userModel = userService.getUserInfo(condition);
@@ -106,17 +106,22 @@ public class UsersController {
 			logger.info("Returning register.jsp page, validate failed");
 			return "users/add";
 		}
-		UserModel user = userService.addUser(userModel);
+		userService.addUser(userModel);
 		// Add message to flash scope
 		flash.success("user.create.success");
 		flash.keep();
-		request.login(userModel.getEmail(), userModel.getPassword());
-		return "redirect: " + request.getContextPath() + "/users/" + user.getId();
+		return "redirect: " + request.getContextPath() + "/home";
 	}
 
 	@GetMapping(value = "/users/{id}/edit")
-	public String edit(@PathVariable Integer id, Model model) {
-		model.addAttribute("user", userService.findUser(id));
+	public String edit(@PathVariable Integer id, Model model, HttpServletRequest request) {
+		Optional<UserModel> optional = userService.findUser(id);
+		if (optional.isEmpty()) {
+			flash.success("user.error.notfound");
+			flash.keep();
+			return "redirect: " + request.getContextPath() + "/home";
+		}
+		model.addAttribute("user", optional.get());
 		return "users/edit";
 	}
 

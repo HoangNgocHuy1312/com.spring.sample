@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <title th:text="#{account_activation.title}">Account Activation</title>
+</head>
+<body>
+  <h1 th:text="#{account_activation.title}">Account Activation</h1>
+  <p th:text="#{account_activation.username(${user.name})}">
+    Hello, Peter Static!
+  </p>
+  <p th:text="#{account_activation.desc}">You registered successfully. To confirm your registration, please click on the below link</p>
+  <a th:href="@{${baseUrl}+'/account_activations/'+${user.activationDigest}+'/edit?email='+${user.email}}" th:text="#{account_activation.activate}">Activate</a>
+</body>
+</html>

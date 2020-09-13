@@ -2,6 +2,7 @@ package com.spring.sample.configuration;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
@@ -10,8 +11,11 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.core.session.SessionRegistry;
+import org.springframework.security.core.session.SessionRegistryImpl;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.access.AccessDeniedHandler;
+import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
@@ -19,6 +23,7 @@ import org.springframework.web.accept.ContentNegotiationStrategy;
 
 import com.spring.sample.entity.Role;
 import com.spring.sample.service.UserService;
+import com.spring.sample.util.Constants.Expiration;
 
 @Configuration
 @EnableWebSecurity
@@ -32,6 +37,17 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 	@Autowired
 	@Qualifier("authenticationSuccessHandler")
     private AuthenticationSuccessHandler authenticationSuccessHandler;
+	
+	@Autowired
+	@Qualifier("authenticationFailureHandler")
+    private AuthenticationFailureHandler authenticationFailureHandler;
+	
+	
+//	@Autowired
+//    private CustomWebAuthenticationDetailsSource authenticationDetailsSource;
+	
+//	@Autowired
+//    private LogoutSuccessHandler myLogoutSuccessHandler;
 	
 	@Autowired
 	private PasswordEncoder passwordEncoder;
@@ -64,6 +80,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 	
 	@Override
 	protected void configure(HttpSecurity http) throws Exception {
+		// @formatter:off
 		http.authorizeRequests()
 	        .antMatchers("/resources/**").permitAll()
 	        .antMatchers("/images/**").permitAll()
@@ -71,25 +88,46 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 	        .antMatchers("/home").permitAll()
 	        .antMatchers("/login").permitAll()
 	        .antMatchers("/signup").permitAll()
-//	        .antMatchers("/users/add").permitAll()
 	        .antMatchers(HttpMethod.POST, "/users").permitAll()
 	        .antMatchers("/error").permitAll()
 	        .antMatchers("/access_denied").permitAll()
+	        .antMatchers("/invalid_session").permitAll()
+	        .antMatchers(HttpMethod.GET, "/account_activations/**").permitAll()
+	        .antMatchers("/password_resets/**").permitAll()
 	        .antMatchers("/admin/**").hasAuthority(Role.ADMIN.name())
 	        .antMatchers(HttpMethod.GET, "/users").hasAnyAuthority(Role.USER.name(), Role.ADMIN.name())
-	        .anyRequest().hasAnyAuthority(Role.USER.name(), Role.ADMIN.name())
-	        .and().formLogin().loginPage("/login").failureUrl("/login?error=true")
-			    .usernameParameter("email").passwordParameter("password")
-			    .successHandler(authenticationSuccessHandler).loginProcessingUrl("/login").defaultSuccessUrl("/").permitAll()
-	        .and().logout().invalidateHttpSession(true).clearAuthentication(true).deleteCookies("JSESSIONID")
-	            .logoutRequestMatcher(new AntPathRequestMatcher("/logout")).logoutSuccessUrl("/login?logout").permitAll()
-	        .and().rememberMe().rememberMeParameter("remember-me").tokenValiditySeconds(60*60).useSecureCookie(true)
-	            .tokenRepository(userService).userDetailsService(userService)
-	        .and().exceptionHandling().accessDeniedHandler(accessDeniedHandler)
-	        .and().csrf()
-	        .and().headers().contentSecurityPolicy("script-src 'self' https://trustedscripts.example.com; object-src https://trustedplugins.example.com; report-uri /csp-report-endpoint/");
-//			.httpBasic();
-//		http.csrf();
+	        .anyRequest().permitAll();//.hasAnyAuthority(Role.USER.name(), Role.ADMIN.name());
+		http.formLogin()
+			.loginPage("/login").failureUrl("/login?error=true&code=0")
+			.usernameParameter("email").passwordParameter("password")
+			.successHandler(authenticationSuccessHandler)
+			.failureHandler(authenticationFailureHandler)
+			.loginProcessingUrl("/login")
+			.defaultSuccessUrl("/")
+			.permitAll();
+		http.logout()
+			.invalidateHttpSession(false)
+			.clearAuthentication(true)
+			.deleteCookies("JSESSIONID")
+	        .logoutRequestMatcher(new AntPathRequestMatcher("/logout"))
+	        .logoutSuccessUrl("/login?logout")
+	        .permitAll();
+		http.rememberMe()
+			.rememberMeParameter("remember-me")
+			.tokenValiditySeconds(Expiration.REMEMBER_TOKEN_EXPIRY.value)
+			.useSecureCookie(true)
+	        .tokenRepository(userService)
+	        .userDetailsService(userService);
+		http.sessionManagement()
+        	.invalidSessionUrl("/invalid_session")
+        	.maximumSessions(1)
+        	.sessionRegistry(sessionRegistry())
+        	.and().sessionFixation().none();
+		http.exceptionHandling()
+			.accessDeniedHandler(accessDeniedHandler);
+		http.csrf();
+		http.headers().contentSecurityPolicy("script-src 'self' https://trustedscripts.example.com; object-src https://trustedplugins.example.com; report-uri /csp-report-endpoint/");
+//			http.httpBasic();
 	}
 	
 //	@Bean
@@ -111,6 +149,11 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 	protected void configure(AuthenticationManagerBuilder auth) throws Exception {
 		auth.userDetailsService(userService).passwordEncoder(passwordEncoder);
 	}
+	
+	@Bean
+    public SessionRegistry sessionRegistry() {
+        return new SessionRegistryImpl();
+    }
 	
 //	@Bean
 //    public BCryptPasswordEncoder passwordEncoder() {

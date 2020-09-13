@@ -1,13 +1,18 @@
 package com.spring.sample.model;
 
+import java.util.Calendar;
+import java.util.Date;
+
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.Size;
 
+import com.spring.sample.entity.Activation;
 import com.spring.sample.validator.FieldMatch;
 import com.spring.sample.validator.NullOrNotBlank;
 import com.spring.sample.validator.UniqueEmail;
 
+@SuppressWarnings("serial")
 @FieldMatch.List({
 		@FieldMatch(first = "password", second = "confirmation", message = "{user.validation.password.notmatch}") })
 @UniqueEmail(name = "email", message = "{user.validation.email.exist}")
@@ -26,6 +31,12 @@ public class UserModel extends BaseModel {
 	private String confirmation = null;
 
 	private int role;
+	private String activationDigest;
+	private Integer activated;
+	private Date activatedAt;
+	private String resetDigest;
+	private Date resetSentAt;
+
 	private int totalMicropost = 0;
 	private boolean followedByCurrentUser = false;
 	private int totalFollowing = 0;
@@ -94,6 +105,50 @@ public class UserModel extends BaseModel {
 		this.role = role;
 	}
 
+	public String getActivationDigest() {
+		return activationDigest;
+	}
+
+	public void setActivationDigest(String activationDigest) {
+		this.activationDigest = activationDigest;
+	}
+
+	public boolean activated() {
+		return activated == Activation.ACTIVATED.value;
+	}
+
+	public Integer getActivated() {
+		return activated;
+	}
+
+	public void setActivated(Integer activated) {
+		this.activated = activated;
+	}
+
+	public Date getActivatedAt() {
+		return activatedAt;
+	}
+
+	public void setActivatedAt(Date activatedAt) {
+		this.activatedAt = activatedAt;
+	}
+
+	public String getResetDigest() {
+		return resetDigest;
+	}
+
+	public void setResetDigest(String resetDigest) {
+		this.resetDigest = resetDigest;
+	}
+
+	public Date getResetSentAt() {
+		return resetSentAt;
+	}
+
+	public void setResetSentAt(Date resetSentAt) {
+		this.resetSentAt = resetSentAt;
+	}
+
 	public int getTotalMicropost() {
 		return totalMicropost;
 	}
@@ -136,6 +191,14 @@ public class UserModel extends BaseModel {
 
 	public void setCurrentUserId(Integer currentUserId) {
 		this.currentUserId = currentUserId;
+	}
+
+	public boolean isPasswordResetExpired(Date resetSentAt) {
+		final Calendar cal = Calendar.getInstance();
+		if ((cal.getTime().getTime() - resetSentAt.getTime()) <= 0) {
+			return false;
+		}
+		return true;
 	}
 
 }

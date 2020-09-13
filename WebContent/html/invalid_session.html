@@ -1,0 +1,12 @@
+<!DOCTYPE html>
+<html th:replace="~{templates/layout :: layout(~{::title}, ~{::body}, ~{})}" xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+<head>
+ <title th:text="#{error.invalidsession.title}">Invalid Session</title>
+</head>
+<body>
+  <div class="container">
+    <h1 class="alert alert-danger" th:utext="#{error.invalidsession.message}">Session Timed Out</h1>
+	<a class="btn btn-primary" th:href="@{/login}" th:utext="#{error.invalidsession.login}">login</a>
+  </div>
+</body>
+</html>

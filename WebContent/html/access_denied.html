@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+<html th:replace="~{templates/layout :: layout(~{::title}, ~{::body}, ~{})}" xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
 <head>
  <title th:text="#{error.accessdenined.title}">Access denied</title>
 </head>

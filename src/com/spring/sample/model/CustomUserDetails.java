@@ -1,11 +1,5 @@
 package com.spring.sample.model;
 
-import java.util.Collection;
-import java.util.stream.Collectors;
-
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
-
 import com.spring.sample.entity.Role;
 
 @SuppressWarnings("serial")
@@ -13,7 +7,8 @@ public class CustomUserDetails extends org.springframework.security.core.userdet
 	private UserModel user = null;
 
 	public CustomUserDetails(UserModel user) {
-		super(user.getEmail(), user.getPassword(), mapRolesToAuthorities(user.getRole()));
+		super(user.getEmail(), user.getPassword(), user.activated(), true, true, true,
+				Role.mapRolesToAuthorities(user.getRole()));
 		this.user = user;
 	}
 
@@ -23,11 +18,6 @@ public class CustomUserDetails extends org.springframework.security.core.userdet
 
 	public void setUser(UserModel user) {
 		this.user = user;
-	}
-
-	private static Collection<? extends GrantedAuthority> mapRolesToAuthorities(int value) {
-		return Role.toList(value).stream().map(role -> new SimpleGrantedAuthority(role.name()))
-				.collect(Collectors.toList());
 	}
 
 }

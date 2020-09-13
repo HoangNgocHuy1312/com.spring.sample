@@ -9,7 +9,9 @@
   <div th:if="${users.totalPages > 0}" th:replace="~{shared/_pagination :: copy(${users}, '/users')}"></div>
   
   <ul class="users">
-    <li th:each="user : ${users.content}" th:replace="~{users/_user :: copy(${user})}"></li>
+    <th:block th:each="user : ${users.content}">
+    <li th:replace="~{users/_user :: copy(${user})}"></li>
+    </th:block>
   </ul>
   
   <div th:if="${users.totalPages > 0}" th:replace="~{shared/_pagination :: copy(${users}, '/users')}"></div>

@@ -1,6 +1,7 @@
 package com.spring.sample.service;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.data.domain.Page;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -9,11 +10,11 @@ import org.springframework.security.web.authentication.rememberme.PersistentToke
 import com.spring.sample.model.UserModel;
 
 public interface UserService extends UserDetailsService, PersistentTokenRepository {
-	public UserModel findUserByEmail(String email);
+	public Optional<UserModel> findUserByEmail(String email);
 
 	public boolean existingEmail(String email, Integer id);
 
-	public UserModel findUser(Integer id);
+	public Optional<UserModel> findUser(Integer id);
 	
 	public UserModel getUserInfo(UserModel condition);
 
@@ -23,11 +24,25 @@ public interface UserService extends UserDetailsService, PersistentTokenReposito
 
 	public boolean deleteUser(UserModel userModel) throws Exception;
 
-	public boolean follow(UserModel follower, UserModel followed);
+	public boolean follow(UserModel follower, UserModel followed) throws Exception;
 
-	public boolean unfollow(UserModel follower, UserModel followed);
-
+	public boolean unfollow(UserModel follower, UserModel followed) throws Exception;
+	
 	public boolean isFollowing(UserModel follower, UserModel followed);
+	
+	public boolean createActivationDigest(UserModel userModel) throws Exception;
+	
+    public boolean createPasswordReset(final UserModel userModel) throws Exception;
+
+//    public PasswordResetToken getPasswordResetToken(final String token);
+//    
+//    public Optional<UserModel> getUserByPasswordResetToken(final String token);
+//
+//    public Optional<UserModel> getUserByID(final long id);
+//
+    public boolean changeUserPassword(final UserModel userModel) throws Exception;
+	
+	public boolean active(UserModel userModel) throws Exception;
 
 	public Page<UserModel> following(UserModel userModel);
 

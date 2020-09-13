@@ -18,5 +18,10 @@
 		<qualifier value="micropostService"/>
     	<property name="micropostDAO" ref="micropostDAO" />
     </bean>
+    
+    <bean id="contactService" class="com.spring.sample.service.imp.ContactServiceImp">
+		<qualifier value="contactService"/>
+    	<property name="contactDAO" ref="contactDAO" />
+    </bean>
 
 </beans>

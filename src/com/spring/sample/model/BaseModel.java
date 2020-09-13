@@ -1,10 +1,15 @@
 package com.spring.sample.model;
 
+import java.io.Serializable;
+
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 
-public abstract class BaseModel {
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
+@SuppressWarnings("serial")
+public abstract class BaseModel implements Serializable {
 	private Sort sort;
 	private Integer page = 1;
 	private Integer perPage = 3;
@@ -25,6 +30,7 @@ public abstract class BaseModel {
 		this.perPage = perPage;
 	}
 
+	@JsonIgnore
 	public Sort getSort() {
 		return sort;
 	}
@@ -33,6 +39,7 @@ public abstract class BaseModel {
 		this.sort = sort;
 	}
 
+	@JsonIgnore
 	public Pageable getPageable() {
 		if (sort == null) {
 			return PageRequest.of(page - 1, perPage);

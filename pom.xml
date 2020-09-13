@@ -9,7 +9,7 @@
         <id>springio-plugins-release</id>
         <url>https://repo.spring.io/plugins-release/</url>
     </repository>
-</repositories>
+  </repositories>
   <dependencies>
 		<dependency>
 			<groupId>org.springframework</groupId>
@@ -58,11 +58,52 @@
 		    <artifactId>spring-security-acl</artifactId>
 		    <version>5.3.4.RELEASE</version>
 		</dependency>
-		<!-- https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-starter-security -->
 		<dependency>
+		   	<groupId>com.github.sonus21</groupId>
+		   	<artifactId>rqueue-spring</artifactId>
+		   	<version>2.0.4-RELEASE</version>
+		</dependency>
+		<!-- https://mvnrepository.com/artifact/io.micrometer/micrometer-registry-prometheus -->
+		<dependency>
+		    <groupId>io.micrometer</groupId>
+		    <artifactId>micrometer-registry-prometheus</artifactId>
+		    <version>1.5.4</version>
+		</dependency>
+		<!-- https://mvnrepository.com/artifact/io.lettuce/lettuce-core -->
+		<dependency>
+		    <groupId>io.lettuce</groupId>
+		    <artifactId>lettuce-core</artifactId>
+		    <version>5.3.3.RELEASE</version>
+		</dependency>
+		<!-- https://mvnrepository.com/artifact/org.springframework.data/spring-data-redis -->
+		<dependency>
+		    <groupId>org.springframework.data</groupId>
+		    <artifactId>spring-data-redis</artifactId>
+		    <version>2.3.3.RELEASE</version>
+		</dependency>
+		<!-- https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-starter-security -->
+		<!-- <dependency>
 		    <groupId>org.springframework.boot</groupId>
 		    <artifactId>spring-boot-starter-security</artifactId>
 		    <version>2.3.3.RELEASE</version>
+		    <exclusions>
+			    <exclusion>
+			    	<groupId>org.springframework.boot</groupId>
+			    	<artifactId>spring-boot-starter-logging</artifactId>
+			    </exclusion>
+			</exclusions>
+		</dependency> -->
+		<!-- https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-starter-mail -->
+		<dependency>
+		    <groupId>org.springframework.boot</groupId>
+		    <artifactId>spring-boot-starter-mail</artifactId>
+		    <version>2.3.3.RELEASE</version>
+		    <exclusions>
+			    <exclusion>
+			    	<groupId>org.springframework.boot</groupId>
+			      	<artifactId>spring-boot-starter-logging</artifactId>
+			    </exclusion>
+			</exclusions>
 		</dependency>
 		<!-- https://mvnrepository.com/artifact/org.thymeleaf/thymeleaf -->
 		<dependency>
@@ -89,17 +130,17 @@
 		    <version>3.0.4.RELEASE</version>
 		</dependency>			
 		<!-- https://mvnrepository.com/artifact/org.apache.tiles/tiles-extras -->
-		<dependency>
+		<!-- <dependency>
 		    <groupId>org.apache.tiles</groupId>
 		    <artifactId>tiles-extras</artifactId>
 		    <version>3.0.8</version>
-		</dependency>
+		</dependency> -->
 		<!-- https://mvnrepository.com/artifact/org.apache.tiles/tiles-servlet -->
-		<dependency>
+		<!-- <dependency>
     		<groupId>org.apache.tiles</groupId>
     		<artifactId>tiles-servlet</artifactId>
     		<version>3.0.8</version>
-  		</dependency>
+  		</dependency> -->
 		<!-- https://mvnrepository.com/artifact/org.apache.tiles/tiles-jsp -->
 		<dependency>
 		    <groupId>org.apache.tiles</groupId>
@@ -124,6 +165,12 @@
 		    <artifactId>mysql-connector-java</artifactId>
 		    <version>8.0.21</version>
 		</dependency>
+		<!-- https://mvnrepository.com/artifact/org.webjars/jquery -->
+		<dependency>
+		    <groupId>org.webjars</groupId>
+		    <artifactId>jquery</artifactId>
+		    <version>3.5.1</version>
+		</dependency>
 		<!-- https://mvnrepository.com/artifact/org.webjars/bootstrap -->
 		<dependency>
 		    <groupId>org.webjars</groupId>
@@ -142,12 +189,6 @@
 		    <groupId>org.webjars</groupId>
 		    <artifactId>font-awesome</artifactId>
 		    <version>5.14.0</version>
-		</dependency>
-		<!-- https://mvnrepository.com/artifact/org.webjars.bower/jquery -->
-		<dependency>
-		    <groupId>org.webjars.bower</groupId>
-		    <artifactId>jquery</artifactId>
-		    <version>3.5.1</version>
 		</dependency>
 		<!-- https://mvnrepository.com/artifact/net.jcip/jcip-annotations -->
 		<dependency>
@@ -214,6 +255,12 @@
 		    <artifactId>commons-io</artifactId>
 		    <version>2.7</version>
 		</dependency>
+		<!-- https://mvnrepository.com/artifact/org.apache.commons/commons-lang3 -->
+		<dependency>
+		    <groupId>org.apache.commons</groupId>
+		    <artifactId>commons-lang3</artifactId>
+		    <version>3.11</version>
+		</dependency>
 		<!-- https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-databind -->
 		<dependency>
 		    <groupId>com.fasterxml.jackson.core</groupId>
@@ -275,6 +322,13 @@
 			<artifactId>slf4j-log4j12</artifactId>
 			<version>1.7.30</version>
 			<scope>runtime</scope>
+		</dependency>
+		<!-- https://mvnrepository.com/artifact/org.slf4j/slf4j-simple -->
+		<dependency>
+		    <groupId>org.slf4j</groupId>
+		    <artifactId>slf4j-simple</artifactId>
+		    <version>1.7.30</version>
+		    <scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>log4j</groupId>
